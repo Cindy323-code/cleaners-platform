@@ -144,6 +144,183 @@ This section lists all 42 user stories identified in the cleaner platform, categ
 **#41** As a platform manager, I want to log in to the system so that I can access management tools and reports.  
 **#42** As a platform manager, I want to log out from the system so that I can securely end my session.
 
+## 6. Functional Requirements
+
+This section outlines the functional requirements of the Chiikawa platform, derived from the user stories. Each requirement includes its associated task list to guide system implementation.
+
+---
+
+###  User Admin
+
+**#1 Create user account**
+- Display user registration form
+- Validate input fields (name, email, password, etc.)
+- Store account in database
+
+**#2 View user account details**
+- Search for user by ID
+- Display user’s account info
+
+**#3 Update user account details**
+- Edit name, email, role, etc.
+- Validate and save updated info
+
+**#4 Suspend user account**
+- Click “Suspend” on user profile
+- Set user status to “inactive”
+- Prevent login if suspended
+
+**#5 Search for user account**
+- Input name, email or role as keyword
+- Display matching results in list
+
+**#6 Create user profile**
+- Add profile details (DOB, address, etc.)
+- Link profile to account
+
+**#7 View user profile**
+- Search profile by ID
+- Display full profile details
+
+**#8 Update user profile**
+- Edit profile fields (e.g., phone, availability)
+- Save changes
+
+**#9 Temporarily suspend user profile**
+- Mark profile as “unavailable”
+- Hide profile from search
+
+**#10 Search for user profile**
+- Filter by keyword, role, or status
+- Return profile list
+
+**#11 Log in**
+- Authenticate email and password
+- Redirect to dashboard upon success
+
+**#12 Log out**
+- End session and redirect to login page
+
+---
+
+###  Cleaner
+
+**#13 Create cleaning service**
+- Input service name, type, description, price
+- Save service to database
+
+**#14 View list of cleaning services**
+- Show all services by current cleaner
+- Include service details in table
+
+**#15 Update cleaning service**
+- Edit title, price, or description
+- Save updated record
+
+**#16 Delete cleaning service**
+- Click “Delete” for a listed service
+- Remove from database
+
+**#17 Search/filter own services**
+- Filter by name, type, availability
+- Display matching results
+
+**#18 Log in**
+- Authenticate and enter cleaner dashboard
+
+**#19 Log out**
+- End session and return to login
+
+**#27 View number of service views**
+- Show view counter per service
+
+**#28 View times added to shortlist**
+- Display how many users shortlisted a service
+
+**#29 Search confirmed match history**
+- Filter by service type and date
+- Show matches with summary
+
+**#30 View past confirmed match details**
+- Select a match and view full info:
+  - Home owner name, date, payment
+
+---
+
+###  Home Owner
+
+**#20 Search for cleaners**
+- Input filter criteria: type, rating, availability
+- Display list of available cleaners
+
+**#21 View cleaner profiles**
+- Click on cleaner name to open profile
+- Show description, ratings, service list
+
+**#22 Save cleaner to shortlist**
+- Click “Add to shortlist” on cleaner profile
+- Store link in user's favorite list
+
+**#23 View shortlist**
+- Display saved cleaners in a grid/list
+
+**#24 Search within shortlist**
+- Filter by cleaner name, type, or location
+
+**#25 Log in**
+- Authenticate and enter home owner dashboard
+
+**#26 Log out**
+- End session and clear user data
+
+**#31 Search past cleaning history**
+- Filter by service type and date range
+- Show matching historical bookings
+
+**#32 View full past cleaning details**
+- Display all completed services with:
+  - Cleaner name, date, service type, feedback
+
+---
+
+###  Platform Manager
+
+**#33 Create new service category**
+- Input name and description
+- Save category to database
+
+**#34 View all service categories**
+- Display full list of existing categories
+
+**#35 Update service category**
+- Edit name or description
+- Save changes to database
+
+**#36 Delete service category**
+- Click “Delete” on a category
+- Confirm and remove entry
+
+**#37 Search categories by keyword**
+- Input keyword to search by name or description
+
+**#38 Generate daily report**
+- Select date (default: today)
+- Show summary: logins, bookings, earnings, etc.
+
+**#39 Generate weekly report**
+- Select week range
+- Display 7-day summary statistics
+
+**#40 Generate monthly report**
+- Select month/year
+- Show trend charts and aggregated data
+
+**#41 Log in**
+- Authenticate as platform manager
+- Access admin tools and reporting dashboard
+
+**#42 Log out**
+- Securely end session and return to login screen
 
 ---
 
