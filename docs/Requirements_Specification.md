@@ -143,6 +143,7 @@ This section lists all 42 user stories identified in the cleaner platform, categ
 **#40** As a platform manager, I want to generate and view a monthly report so that I can analyze performance and plan improvements.  
 **#41** As a platform manager, I want to log in to the system so that I can access management tools and reports.  
 **#42** As a platform manager, I want to log out from the system so that I can securely end my session.
+![image](https://github.com/user-attachments/assets/12bb15e9-3bef-4c0a-ad2c-87e18cc789ca)
 
 
 ---
