@@ -322,5 +322,6 @@ This section outlines the functional requirements of the Chiikawa platform, deri
 **#42 Log out**
 - Securely end session and return to login screen
 
+
 ---
 
