@@ -35,7 +35,7 @@
 
 ### 3.1 Project Background
 
-Chiikawa is a web-based platform designed to connect **home owners** in need of cleaning services with **freelance cleaners** offering those services. The platform supports **C2C (Customer-to-Customer)** service matching, providing functionalities for service listing, booking, evaluation, and reporting.
+cleaner-platform is a web-based platform designed to connect **home owners** in need of cleaning services with **freelance cleaners** offering those services. The platform supports **C2C (Customer-to-Customer)** service matching, providing functionalities for service listing, booking, evaluation, and reporting.
 
 The project is developed as part of the CSIT314 Software Development Methodologies module. Development follows the **Scrum agile methodology**, and the system architecture adheres to the **BCE (Boundary-Control-Entity)** design framework.
 
