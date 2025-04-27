@@ -146,7 +146,7 @@ This section lists all 42 user stories identified in the cleaner platform, categ
 
 ## 6. Functional Requirements
 
-This section outlines the functional requirements of the Chiikawa platform, derived from the user stories. Each requirement includes its associated task list to guide system implementation.
+This section outlines the functional requirements of the cleaner platform, derived from the user stories. Each requirement includes its associated task list to guide system implementation.
 
 ---
 
