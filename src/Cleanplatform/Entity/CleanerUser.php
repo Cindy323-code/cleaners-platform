@@ -1,0 +1,95 @@
+<?php
+// entity/CleanerUser.php
+namespace Entity;
+require_once __DIR__ . '/User.php'; 
+
+class CleanerUser extends User {
+    protected static string $tableName = 'cleaners';
+
+    /** 创建清洁服务 */
+    public function createService(array $data): bool {
+        $sql = 'INSERT INTO cleaner_services'
+             . ' (cleaner_id,name,type,price,description)'
+             . ' VALUES(?,?,?,?,?)';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param(
+            $stmt, 'issds',
+            $data['cleaner_id'],
+            $data['name'],
+            $data['type'],
+            $data['price'],
+            $data['description']
+        );
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
+
+    /** 查看我的所有服务 */
+    public function viewServices(int $cleanerId): array {
+        $sql = 'SELECT id,name,type,price,description,created_at'
+             . ' FROM cleaner_services WHERE cleaner_id = ?';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $cleanerId);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result(
+            $stmt,$id,$name,$type,$price,$description,$createdAt
+        );
+        $res = [];
+        while (mysqli_stmt_fetch($stmt)) {
+            $res[] = compact('id','name','type','price','description','createdAt');
+        }
+        mysqli_stmt_close($stmt);
+        return $res;
+    }
+
+    /** 更新服务 */
+    public function updateService(int $id, array $fields): bool {
+        $sets = [];
+        $types = '';
+        $vals  = [];
+        foreach ($fields as $col => $val) {
+            $sets[] = "`$col` = ?";
+            $types .= is_int($val) ? 'i' : 's';
+            $vals[]  = $val;
+        }
+        $sql = 'UPDATE cleaner_services SET '
+             . implode(',', $sets)
+             . ' WHERE id = ?';
+        $types .= 'i';
+        $vals[] = $id;
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, $types, ...$vals);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
+
+    /** 删除服务 */
+    public function deleteService(int $id): bool {
+        $sql = 'DELETE FROM cleaner_services WHERE id = ?';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $id);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
+
+    /** 搜索服务 */
+    public function searchServices(int $cleanerId, string $keyword): array {
+        $like = "%$keyword%";
+        $sql = 'SELECT id,name,type,price,description'
+             . ' FROM cleaner_services'
+             . ' WHERE cleaner_id = ? AND name LIKE ?';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'is', $cleanerId, $like);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt,$id,$name,$type,$price,$description);
+        $res = [];
+        while (mysqli_stmt_fetch($stmt)) {
+            $res[] = compact('id','name','type','price','description');
+        }
+        mysqli_stmt_close($stmt);
+        return $res;
+    }
+}
