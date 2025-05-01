@@ -129,20 +129,51 @@ class AdminUser extends User {
     
     /** 获取所有用户 */
     public function getAllUsers(): array {
-        $sql = 'SELECT id, username, email, role, status, created_at'
-             . ' FROM ' . static::$tableName
-             . ' ORDER BY created_at DESC';
-        $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_execute($stmt);
+        // 获取管理员用户
+        $adminSql = 'SELECT id, username, email, role, status, created_at FROM admin_users ORDER BY created_at DESC';
+        $adminStmt = mysqli_prepare($this->conn, $adminSql);
+        mysqli_stmt_execute($adminStmt);
         mysqli_stmt_bind_result(
-            $stmt,
+            $adminStmt,
             $id, $user, $email, $role, $status, $createdAt
         );
-        $res = [];
-        while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('id', 'user', 'email', 'role', 'status', 'createdAt');
+        $results = [];
+        while (mysqli_stmt_fetch($adminStmt)) {
+            $results[] = compact('id', 'user', 'email', 'role', 'status', 'createdAt');
         }
-        mysqli_stmt_close($stmt);
-        return $res;
+        mysqli_stmt_close($adminStmt);
+        
+        // 获取清洁工用户
+        $cleanerSql = 'SELECT id, username, email, role, status, created_at FROM cleaners ORDER BY created_at DESC';
+        $cleanerStmt = mysqli_prepare($this->conn, $cleanerSql);
+        mysqli_stmt_execute($cleanerStmt);
+        mysqli_stmt_bind_result(
+            $cleanerStmt,
+            $id, $user, $email, $role, $status, $createdAt
+        );
+        while (mysqli_stmt_fetch($cleanerStmt)) {
+            $results[] = compact('id', 'user', 'email', 'role', 'status', 'createdAt');
+        }
+        mysqli_stmt_close($cleanerStmt);
+        
+        // 获取房主用户
+        $homeownerSql = 'SELECT id, username, email, role, status, created_at FROM homeowners ORDER BY created_at DESC';
+        $homeownerStmt = mysqli_prepare($this->conn, $homeownerSql);
+        mysqli_stmt_execute($homeownerStmt);
+        mysqli_stmt_bind_result(
+            $homeownerStmt,
+            $id, $user, $email, $role, $status, $createdAt
+        );
+        while (mysqli_stmt_fetch($homeownerStmt)) {
+            $results[] = compact('id', 'user', 'email', 'role', 'status', 'createdAt');
+        }
+        mysqli_stmt_close($homeownerStmt);
+        
+        // 按创建时间排序
+        usort($results, function($a, $b) {
+            return strcmp($b['createdAt'], $a['createdAt']);
+        });
+        
+        return $results;
     }
 }

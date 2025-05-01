@@ -6,6 +6,24 @@ require_once __DIR__ . '/User.php';
 class HomeOwnerUser extends User {
     protected static string $tableName = 'homeowners';
 
+    /** 创建用户账户 */
+    public function createUser(array $data): bool {
+        $sql = 'INSERT INTO ' . static::$tableName
+             . ' (username, password_hash, email, role, status) VALUES (?, ?, ?, ?, ?)';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param(
+            $stmt, 'sssss',
+            $data['username'],
+            $data['password_hash'],
+            $data['email'],
+            $data['role'],
+            $data['status']
+        );
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
+
     /** 搜索可用清洁工 */
     public function searchAvailableCleaners(array $criteria): array {
         // 示例查询：按服务类型和最低评分

@@ -6,6 +6,24 @@ require_once __DIR__ . '/User.php';
 class CleanerUser extends User {
     protected static string $tableName = 'cleaners';
 
+    /** 创建用户账户 */
+    public function createUser(array $data): bool {
+        $sql = 'INSERT INTO ' . static::$tableName
+             . ' (username, password_hash, email, role, status) VALUES (?, ?, ?, ?, ?)';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param(
+            $stmt, 'sssss',
+            $data['username'],
+            $data['password_hash'],
+            $data['email'],
+            $data['role'],
+            $data['status']
+        );
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
+
     /** 创建清洁服务 */
     public function createService(array $data): bool {
         $sql = 'INSERT INTO cleaner_services'
