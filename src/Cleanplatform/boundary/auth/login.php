@@ -50,36 +50,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Unified Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cleaning Platform - Login</title>
+    <link rel="stylesheet" href="/Cleanplatform/public/css/style.css">
     <style>
-        body { font-family: Arial, sans-serif; margin: 2em; }
-        label, select, input { display: block; margin: 0.5em 0; }
-        button { margin-top: 1em; padding: 0.5em 1em; }
-        .error { color: red; }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .login-header h2 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
-    <h2>System Login</h2>
-    <?php if ($errorMessage): ?>
-        <p class="error"><?= htmlspecialchars($errorMessage) ?></p>
-    <?php endif; ?>
-    <form method="post" action="">
-        <label for="role">Role:</label>
-        <select name="role" id="role" required>
-            <option value="">-- Select Role --</option>
-            <option value="admin">User Admin</option>
-            <option value="cleaner">Cleaner</option>
-            <option value="homeowner">Home Owner</option>
-            <option value="manager">Platform Manager</option>
-        </select>
-
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-
-        <button type="submit">Login</button>
-    </form>
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Cleaning Platform Management System</h2>
+            <p>Please login to your account</p>
+        </div>
+        
+        <?php if ($errorMessage): ?>
+            <div class="error"><?= htmlspecialchars($errorMessage) ?></div>
+        <?php endif; ?>
+        
+        <form method="post" action="">
+            <div class="form-group">
+                <label for="role">User Role:</label>
+                <select name="role" id="role" required>
+                    <option value="">-- Select Role --</option>
+                    <option value="admin">System Administrator</option>
+                    <option value="cleaner">Cleaner</option>
+                    <option value="homeowner">Homeowner</option>
+                    <option value="manager">Platform Manager</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit">Login</button>
+            
+            <div class="form-footer">
+                © <?= date('Y') ?> Cleaning Platform - All Rights Reserved
+            </div>
+        </form>
+    </div>
 </body>
 </html>

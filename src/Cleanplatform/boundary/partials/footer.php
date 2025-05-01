@@ -1,9 +1,11 @@
 <?php
 // ── partials/footer.php ─────────────────────────────────────────
 ?>
-<footer>
-  <hr>
-  <p>&copy; <?= date('Y') ?> Cleaning Platform – All rights reserved.</p>
-</footer>
+  </div><!-- end .content -->
+  
+  <footer class="footer">
+    <p>&copy; <?= date('Y') ?> Cleaning Platform Management System - All Rights Reserved</p>
+  </footer>
+</div><!-- end .container -->
 </body>
 </html>

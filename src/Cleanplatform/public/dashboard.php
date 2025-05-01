@@ -13,79 +13,246 @@ $username = $_SESSION['user']['username'];
 <p>Welcome, <strong><?= htmlspecialchars($username) ?></strong> (<?= htmlspecialchars($role) ?>)</p>
 
 <?php if ($role === 'admin'): ?>
-    <ul>
-      <li><a href="/Cleanplatform/boundary/admin/create_user_account.php">Create User</a></li>
-      <li><a href="/Cleanplatform/boundary/admin/view_user_account.php">View User</a></li>
-      <li><a href="/Cleanplatform/boundary/admin/update_user_account.php">Update User</a></li>
-      <li><a href="/Cleanplatform/boundary/admin/suspend_user_account.php">Suspend User</a></li>
-      <li><a href="/Cleanplatform/boundary/admin/search_user_account.php">Search Users</a></li>
-    </ul>
+    <div class="module-grid">
+        <!-- User Creation Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Create User</h3>
+            </div>
+            <div class="module-content">
+                <p>Create new user accounts for administrators, cleaners, homeowners, and managers.</p>
+                <form action="/Cleanplatform/boundary/admin/create_user_account.php" method="get" class="module-actions">
+                    <label for="user-type">Select User Type:</label>
+                    <select name="user-type" id="user-type">
+                        <option value="admin">Administrator</option>
+                        <option value="cleaner">Cleaner</option>
+                        <option value="homeowner">Homeowner</option>
+                        <option value="manager">Manager</option>
+                    </select>
+                </form>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/admin/create_user_account.php" class="btn btn-small">Create User</a>
+            </div>
+        </div>
+        
+        <!-- User Management Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">User Management</h3>
+            </div>
+            <div class="module-content">
+                <p>View, update, or suspend existing user accounts.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/admin/view_user_account.php" class="btn btn-small">View Users</a>
+                    <a href="/Cleanplatform/boundary/admin/update_user_account.php" class="btn btn-small">Update User</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/admin/suspend_user_account.php" class="btn btn-small">Suspend User</a>
+            </div>
+        </div>
+        
+        <!-- User Search Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Search Users</h3>
+            </div>
+            <div class="module-content">
+                <p>Search for user accounts by username, email, or role.</p>
+                <form action="/Cleanplatform/boundary/admin/search_user_account.php" method="get" class="module-actions">
+                    <div class="form-group">
+                        <input type="text" name="keyword" placeholder="Enter username or email...">
+                    </div>
+                    <button type="submit" class="btn btn-small">Search Users</button>
+                </form>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/admin/search_user_account.php" class="btn btn-small">Advanced Search</a>
+            </div>
+        </div>
+    </div>
 
-  <?php elseif ($role === 'cleaner'): ?>
-    <ul>
-      <!-- Service Management -->
-      <li><a href="/Cleanplatform/boundary/service/create_cleaning_service.php">Create Service</a></li>
-      <li><a href="/Cleanplatform/boundary/service/view_cleaning_services.php">My Services</a></li>
-      <li><a href="/Cleanplatform/boundary/service/update_cleaning_service.php">Update Service</a></li>
-      <li><a href="/Cleanplatform/boundary/service/delete_cleaning_service.php">Delete Service</a></li>
-      <li><a href="/Cleanplatform/boundary/service/search_cleaning_services.php">Search Services</a></li>
+<?php elseif ($role === 'cleaner'): ?>
+    <div class="module-grid">
+        <!-- Service Management Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Service Management</h3>
+            </div>
+            <div class="module-content">
+                <p>Create and manage your cleaning services.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/service/create_cleaning_service.php" class="btn btn-small">Create Service</a>
+                    <a href="/Cleanplatform/boundary/service/update_cleaning_service.php" class="btn btn-small">Update Service</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/service/view_cleaning_services.php" class="btn btn-small">View All Services</a>
+            </div>
+        </div>
+        
+        <!-- Statistics Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Statistics</h3>
+            </div>
+            <div class="module-content">
+                <p>View your profile statistics and service performance.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/history/view_service_profile_views.php" class="btn btn-small">Profile Views</a>
+                    <a href="/Cleanplatform/boundary/history/view_service_shortlist_count.php" class="btn btn-small">Shortlist Count</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/history/search_confirmed_matches.php" class="btn btn-small">View Matches</a>
+            </div>
+        </div>
+        
+        <!-- Profile Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">My Profile</h3>
+            </div>
+            <div class="module-content">
+                <p>Manage your profile information and visibility.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/profile/view_user_profile.php" class="btn btn-small">View Profile</a>
+                    <a href="/Cleanplatform/boundary/profile/update_user_profile.php" class="btn btn-small">Update Profile</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/profile/deactivate_user_profile.php" class="btn btn-small">Deactivate Profile</a>
+            </div>
+        </div>
+    </div>
 
-      <hr>
-      <!-- Stats & History -->
-      <li><a href="/Cleanplatform/boundary/history/view_service_profile_views.php">Profile View Count</a></li>
-      <li><a href="/Cleanplatform/boundary/history/view_service_shortlist_count.php">Shortlist Count</a></li>
-      <li><a href="/Cleanplatform/boundary/history/search_confirmed_matches.php">Search Confirmed Matches</a></li>
-      <li><a href="/Cleanplatform/boundary/history/view_confirmed_match_details.php">View Match Details</a></li>
+<?php elseif ($role === 'homeowner'): ?>
+    <div class="module-grid">
+        <!-- Find Cleaners Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Find Cleaners</h3>
+            </div>
+            <div class="module-content">
+                <p>Search for available cleaners in your area.</p>
+                <form action="/Cleanplatform/boundary/homeowner/search_available_cleaners.php" method="get" class="module-actions">
+                    <div class="form-group">
+                        <input type="text" name="type" placeholder="Enter service type...">
+                    </div>
+                    <button type="submit" class="btn btn-small">Find Cleaners</button>
+                </form>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/homeowner/search_available_cleaners.php" class="btn btn-small">All Services</a>
+            </div>
+        </div>
+        
+        <!-- Shortlist Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">My Shortlist</h3>
+            </div>
+            <div class="module-content">
+                <p>Manage your shortlisted cleaners.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/shortlist/view_shortlist.php" class="btn btn-small">View Shortlist</a>
+                    <a href="/Cleanplatform/boundary/shortlist/search_shortlist.php" class="btn btn-small">Search Shortlist</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/shortlist/add_to_shortlist.php" class="btn btn-small">Add to Shortlist</a>
+            </div>
+        </div>
+        
+        <!-- History Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Service History</h3>
+            </div>
+            <div class="module-content">
+                <p>View your service usage history.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/history/search_service_usage_history.php" class="btn btn-small">Search History</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/history/view_service_usage_details.php" class="btn btn-small">View Details</a>
+            </div>
+        </div>
+        
+        <!-- Profile Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">My Profile</h3>
+            </div>
+            <div class="module-content">
+                <p>Manage your profile information.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/profile/view_user_profile.php" class="btn btn-small">View Profile</a>
+                    <a href="/Cleanplatform/boundary/profile/update_user_profile.php" class="btn btn-small">Update Profile</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/profile/deactivate_user_profile.php" class="btn btn-small">Deactivate Profile</a>
+            </div>
+        </div>
+    </div>
 
-      <hr>
-      <!-- User Profile -->
-      <li><strong>My Profile</strong></li>
-      <li><a href="/Cleanplatform/boundary/profile/create_user_profile.php">Create My Profile</a></li>
-      <li><a href="/Cleanplatform/boundary/profile/view_user_profile.php">View My Profile</a></li>
-      <li><a href="/Cleanplatform/boundary/profile/update_user_profile.php">Update My Profile</a></li>
-      <li><a href="/Cleanplatform/boundary/profile/deactivate_user_profile.php">Deactivate My Profile</a></li>
-      <li><a href="/Cleanplatform/boundary/profile/search_user_profile.php">Search Other Profiles</a></li>
-    </ul>
-
-  <?php elseif ($role === 'homeowner'): ?>
-    <ul>
-      <!-- Find & Shortlist -->
-      <li><a href="/Cleanplatform/boundary/homeowner/search_available_cleaners.php">Find Cleaners</a></li>
-      <li><a href="/Cleanplatform/boundary/homeowner/view_cleaner_profile.php">View Cleaner Profile</a></li>
-      <hr>
-      <li><a href="/Cleanplatform/boundary/shortlist/add_to_shortlist.php">Add to Shortlist</a></li>
-      <li><a href="/Cleanplatform/boundary/shortlist/view_shortlist.php">My Shortlist</a></li>
-      <li><a href="/Cleanplatform/boundary/shortlist/search_shortlist.php">Search Shortlist</a></li>
-
-      <hr>
-      <!-- Usage History -->
-      <li><a href="/Cleanplatform/boundary/history/search_service_usage_history.php">Search Usage History</a></li>
-      <li><a href="/Cleanplatform/boundary/history/view_service_usage_details.php">View Usage Details</a></li>
-
-      <hr>
-      <!-- User Profile -->
-      <li><strong>My Profile</strong></li>
-      <li><a href="/Cleanplatform/boundary/profile/create_user_profile.php">Create My Profile</a></li>
-      <li><a href="/Cleanplatform/boundary/profile/view_user_profile.php">View My Profile</a></li>
-      <li><a href="/Cleanplatform/boundary/profile/update_user_profile.php">Update My Profile</a></li>
-      <li><a href="/Cleanplatform/boundary/profile/deactivate_user_profile.php">Deactivate My Profile</a></li>
-      <li><a href="/Cleanplatform/boundary/profile/search_user_profile.php">Search Other Profiles</a></li>
-    </ul>
-
-  <?php elseif ($role === 'manager'): ?>
-    <ul>
-      <!-- Category Management -->
-      <li><a href="/Cleanplatform/boundary/category/create_service_category.php">Create Category</a></li>
-      <li><a href="/Cleanplatform/boundary/category/view_service_categories.php">View Categories</a></li>
-      <li><a href="/Cleanplatform/boundary/category/update_service_category.php">Update Category</a></li>
-      <li><a href="/Cleanplatform/boundary/category/delete_service_category.php">Delete Category</a></li>
-      <li><a href="/Cleanplatform/boundary/category/search_service_category.php">Search Categories</a></li>
-
-      <hr>
-      <!-- Reports -->
-      <li><a href="/Cleanplatform/boundary/report/daily.php">Daily Report</a></li>
-      <li><a href="/Cleanplatform/boundary/report/weekly.php">Weekly Report</a></li>
-      <li><a href="/Cleanplatform/boundary/report/monthly.php">Monthly Report</a></li>
-    </ul>
-  <?php endif; ?>
+<?php elseif ($role === 'manager'): ?>
+    <div class="module-grid">
+        <!-- Category Management Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Category Management</h3>
+            </div>
+            <div class="module-content">
+                <p>Create and manage service categories.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/category/create_service_category.php" class="btn btn-small">Create Category</a>
+                    <a href="/Cleanplatform/boundary/category/view_service_categories.php" class="btn btn-small">View Categories</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/category/update_service_category.php" class="btn btn-small">Update Category</a>
+            </div>
+        </div>
+        
+        <!-- Search Categories Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Search Categories</h3>
+            </div>
+            <div class="module-content">
+                <p>Search for service categories by name or description.</p>
+                <form action="/Cleanplatform/boundary/category/search_service_category.php" method="get" class="module-actions">
+                    <div class="form-group">
+                        <input type="text" name="q" placeholder="Enter category name...">
+                    </div>
+                    <button type="submit" class="btn btn-small">Search Categories</button>
+                </form>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/category/search_service_category.php" class="btn btn-small">All Categories</a>
+            </div>
+        </div>
+        
+        <!-- Reports Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Reports</h3>
+            </div>
+            <div class="module-content">
+                <p>Generate and view platform reports.</p>
+                <div class="module-actions">
+                    <a href="/Cleanplatform/boundary/report/daily.php" class="btn btn-small">Daily Report</a>
+                    <a href="/Cleanplatform/boundary/report/weekly.php" class="btn btn-small">Weekly Report</a>
+                </div>
+            </div>
+            <div class="module-footer">
+                <a href="/Cleanplatform/boundary/report/monthly.php" class="btn btn-small">Monthly Report</a>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 <?php require_once __DIR__ . '/../boundary/partials/footer.php'; ?>

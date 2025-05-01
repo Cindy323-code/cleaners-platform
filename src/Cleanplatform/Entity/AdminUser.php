@@ -72,18 +72,75 @@ class AdminUser extends User {
     }
 
     /** 搜索用户 */
-    public function searchUsers(string $keyword): array {
-        $like = "%$keyword%";
-        $sql = 'SELECT username,role,email,status'
-             . ' FROM ' . static::$tableName
-             . ' WHERE username LIKE ? OR role LIKE ? OR email LIKE ?';
+    public function searchUsers(string $keyword = '', string $role = '', string $status = ''): array {
+        // 构建基本SQL查询
+        $sql = 'SELECT username, role, email, status FROM ' . static::$tableName;
+        $conditions = [];
+        $params = [];
+        $types = '';
+        
+        // 添加关键字搜索条件
+        if (!empty($keyword)) {
+            $like = "%$keyword%";
+            $conditions[] = '(username LIKE ? OR email LIKE ?)';
+            $params[] = $like;
+            $params[] = $like;
+            $types .= 'ss';
+        }
+        
+        // 添加角色筛选条件
+        if (!empty($role)) {
+            $conditions[] = 'role = ?';
+            $params[] = $role;
+            $types .= 's';
+        }
+        
+        // 添加状态筛选条件
+        if (!empty($status)) {
+            $conditions[] = 'status = ?';
+            $params[] = $status;
+            $types .= 's';
+        }
+        
+        // 组合WHERE子句
+        if (!empty($conditions)) {
+            $sql .= ' WHERE ' . implode(' AND ', $conditions);
+        }
+        
+        // 添加排序
+        $sql .= ' ORDER BY username ASC';
+        
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'sss', $like, $like, $like);
+        
+        // 如果有参数，绑定它们
+        if (!empty($params)) {
+            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
+        
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $user, $role, $email, $status);
         $res = [];
         while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('user','role','email','status');
+            $res[] = compact('user', 'role', 'email', 'status');
+        }
+        mysqli_stmt_close($stmt);
+        return $res;
+    }
+    
+    /** 获取所有用户 */
+    public function getAllUsers(): array {
+        $sql = 'SELECT id, username, email, role, status, created_at'
+             . ' FROM ' . static::$tableName
+             . ' ORDER BY created_at DESC';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result(
+            $stmt,
+            $id, $user, $email, $role, $status, $createdAt
+        );
+        $res = [];
+        while (mysqli_stmt_fetch($stmt)) {
+            $res[] = compact('id', 'user', 'email', 'role', 'status', 'createdAt');
         }
         mysqli_stmt_close($stmt);
         return $res;
