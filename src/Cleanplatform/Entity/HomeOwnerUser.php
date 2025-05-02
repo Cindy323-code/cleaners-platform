@@ -135,7 +135,36 @@ class HomeOwnerUser extends User {
 
     /** 添加至收藏 */
     public function addToShortlist(int $homeownerId, int $serviceId): bool {
-        $sql = 'INSERT INTO shortlists (homeowner_id,service_id,added_at) VALUES (?,?,NOW())';
+        // 首先检查服务ID是否存在
+        $checkSql = 'SELECT id FROM cleaner_services WHERE id = ? LIMIT 1';
+        $checkStmt = mysqli_prepare($this->conn, $checkSql);
+        mysqli_stmt_bind_param($checkStmt, 'i', $serviceId);
+        mysqli_stmt_execute($checkStmt);
+        mysqli_stmt_store_result($checkStmt);
+        $exists = mysqli_stmt_num_rows($checkStmt) > 0;
+        mysqli_stmt_close($checkStmt);
+        
+        // 如果服务ID不存在，返回false
+        if (!$exists) {
+            return false;
+        }
+        
+        // 检查是否已经添加到收藏夹
+        $dupeSql = 'SELECT id FROM shortlists WHERE homeowner_id = ? AND service_id = ? LIMIT 1';
+        $dupeStmt = mysqli_prepare($this->conn, $dupeSql);
+        mysqli_stmt_bind_param($dupeStmt, 'ii', $homeownerId, $serviceId);
+        mysqli_stmt_execute($dupeStmt);
+        mysqli_stmt_store_result($dupeStmt);
+        $isDuplicate = mysqli_stmt_num_rows($dupeStmt) > 0;
+        mysqli_stmt_close($dupeStmt);
+        
+        // 如果已经在收藏夹中，返回true（视为成功添加）
+        if ($isDuplicate) {
+            return true;
+        }
+        
+        // 添加到收藏夹
+        $sql = 'INSERT INTO shortlists (homeowner_id, service_id, added_at) VALUES (?, ?, NOW())';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'ii', $homeownerId, $serviceId);
         $ok = mysqli_stmt_execute($stmt);

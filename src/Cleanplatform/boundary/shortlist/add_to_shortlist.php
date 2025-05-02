@@ -37,7 +37,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message = 'Service added to your shortlist successfully';
                     $success = true;
                 } else {
-                    $message = 'Failed to add service to shortlist';
+                    // 检查服务ID是否存在
+                    $checkServiceSql = "SELECT id FROM cleaner_services WHERE id = ?";
+                    $checkServiceStmt = mysqli_prepare($db, $checkServiceSql);
+                    mysqli_stmt_bind_param($checkServiceStmt, 'i', $serviceId);
+                    mysqli_stmt_execute($checkServiceStmt);
+                    mysqli_stmt_store_result($checkServiceStmt);
+                    $serviceExists = mysqli_stmt_num_rows($checkServiceStmt) > 0;
+                    mysqli_stmt_close($checkServiceStmt);
+                    
+                    if (!$serviceExists) {
+                        $message = 'Service ID ' . $serviceId . ' does not exist. Please check the ID and try again.';
+                    } else {
+                        $message = 'Failed to add service to shortlist due to an unexpected error.';
+                    }
                 }
             }
             

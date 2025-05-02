@@ -224,7 +224,7 @@ $userId = $_SESSION['user']['id'];
                 </div>
             </div>
             <div class="module-footer">
-                <a href="/Cleanplatform/boundary/history/view_service_usage_details.php" class="btn btn-small">View All Usages</a>
+                <a href="/Cleanplatform/boundary/history/view_service_usage_details.php" class="btn btn-small">View Details</a>
             </div>
         </div>
         
