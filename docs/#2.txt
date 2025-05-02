@@ -18,9 +18,10 @@
 -----------------------------------------------------------------
 
 ---------------------     ------------------------    ------------------------
-  ViewUserPage         ViewUserAccountController       User
+  AdminUserBoundary      ViewUserAccountController       AdminUser
 ---------------------     ------------------------    ------------------------
-displayUserView()         viewUserAccount()         string username
+displayUserList()         viewUserAccount()         int id
+requestViewUser()                                   string username
                                                     string email
                                                     string role
                                                     string status
@@ -29,16 +30,20 @@ displayUserView()         viewUserAccount()         string username
                           getAllUsers()            viewUser(str username): array
                                                    getAllUsers(): array
 ---------------------     ------------------------    ------------------------
-  ViewUserPage            ViewUserAccountController    AdminUser
+  AdminUserBoundary       ViewUserAccountController    AdminUser
 
 
-管理员         requestViewUser                         
-  |   --------------------------------->|                         
-  |                                     | viewUserAccount()       
-  |                                     |------------------------>|
-  |                                     |                         |
-  |                                     |      return (user data) |
-  |                                     |<------------------------|
-  |         return (user details)       |                         |
-  |<------------------------------------|                         |
-  |                                     |                         |
+管理员         AdminUserBoundary            ViewUserAccountController       AdminUser
+  |   选择用户   |                               |                         |
+  |   ------------->|                               |                         |
+  |                 |       requestViewUser         |                         |
+  |                 |------------------------------>|                         |
+  |                 |                               |     viewUserAccount()   |
+  |                 |                               |------------------------>|
+  |                 |                               |                         |
+  |                 |                               |    return (user data)   |
+  |                 |                               |<------------------------|
+  |                 |     return (user details)     |                         |
+  |                 |<------------------------------|                         |
+  |<---------------|                               |                         |
+  |                 |                               |                         |
