@@ -73,8 +73,29 @@ class AdminUser extends User {
 
     /** 搜索用户 */
     public function searchUsers(string $keyword = '', string $role = '', string $status = ''): array {
+        $results = [];
+        
+        // 从admin_users表中搜索
+        $this->searchFromTable('admin_users', $keyword, $role, $status, $results);
+        
+        // 从cleaners表中搜索
+        $this->searchFromTable('cleaners', $keyword, $role, $status, $results);
+        
+        // 从homeowners表中搜索
+        $this->searchFromTable('homeowners', $keyword, $role, $status, $results);
+        
+        // 按用户名排序
+        usort($results, function($a, $b) {
+            return strcmp($a['user'], $b['user']);
+        });
+        
+        return $results;
+    }
+    
+    /** 从指定表中搜索用户 */
+    private function searchFromTable(string $tableName, string $keyword, string $role, string $status, array &$results): void {
         // 构建基本SQL查询
-        $sql = 'SELECT username, role, email, status FROM ' . static::$tableName;
+        $sql = "SELECT username, role, email, status FROM $tableName";
         $conditions = [];
         $params = [];
         $types = '';
@@ -107,9 +128,6 @@ class AdminUser extends User {
             $sql .= ' WHERE ' . implode(' AND ', $conditions);
         }
         
-        // 添加排序
-        $sql .= ' ORDER BY username ASC';
-        
         $stmt = mysqli_prepare($this->conn, $sql);
         
         // 如果有参数，绑定它们
@@ -119,12 +137,12 @@ class AdminUser extends User {
         
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $user, $role, $email, $status);
-        $res = [];
+        
         while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('user', 'role', 'email', 'status');
+            $results[] = compact('user', 'role', 'email', 'status');
         }
+        
         mysqli_stmt_close($stmt);
-        return $res;
     }
     
     /** 获取所有用户 */
