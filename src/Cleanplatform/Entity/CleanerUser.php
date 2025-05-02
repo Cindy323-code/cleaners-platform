@@ -24,6 +24,36 @@ class CleanerUser extends User {
         return $ok;
     }
 
+    /** 用户登录 - 从cleaners表查询 */
+    public function login(string $username, string $password): ?array
+    {
+        $sql = 'SELECT id, username, password_hash, role, status
+                FROM cleaners WHERE username = ? LIMIT 1';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 's', $username);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $id, $user, $hash, $role, $status);
+
+        $result = null;
+
+        if (mysqli_stmt_fetch($stmt)) {
+            $verified = password_verify($password, $hash)
+                     || $password === $hash
+                     || (strlen($hash) === 32 && md5($password) === $hash);
+
+            if ($verified && $status === 'active') {
+                $result = [
+                    'id'       => $id,
+                    'username' => $user,
+                    'role'     => $role,
+                    'status'   => $status
+                ];
+            }
+        }
+        mysqli_stmt_close($stmt);
+        return $result;
+    }
+
     /** 创建清洁服务 */
     public function createService(array $data): bool {
         $sql = 'INSERT INTO cleaner_services'

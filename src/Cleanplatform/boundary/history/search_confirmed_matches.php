@@ -24,3 +24,4 @@ if($_SERVER['REQUEST_METHOD']==='GET'&&isset($_GET['from'],$_GET['to'])){
 </form>
 <ul><?php foreach($results as$r):?><li>Match ID <?=htmlspecialchars($r['id'])?></li><?php endforeach;?></ul>
 </body></html>
+  
