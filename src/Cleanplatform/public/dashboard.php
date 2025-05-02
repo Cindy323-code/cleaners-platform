@@ -215,16 +215,13 @@ $userId = $_SESSION['user']['id'];
         <!-- History Module -->
         <div class="module">
             <div class="module-header">
-                <h3 class="module-title">Service History</h3>
+                <h3 class="module-title">Usage History</h3>
             </div>
             <div class="module-content">
                 <p>View your service usage history.</p>
                 <div class="module-actions">
-                    <a href="/Cleanplatform/boundary/history/search_service_usage_history.php" class="btn btn-small">Search History</a>
+                    <a href="/Cleanplatform/boundary/history/service_usage_history.php" class="btn btn-small">History</a>
                 </div>
-            </div>
-            <div class="module-footer">
-                <a href="/Cleanplatform/boundary/history/view_service_usage_details.php" class="btn btn-small">View Details</a>
             </div>
         </div>
         

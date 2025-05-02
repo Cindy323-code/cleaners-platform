@@ -100,7 +100,7 @@ $profile = $controller->execute($userId, $userRole);
     <div class="button-group">
         <a href="../shortlist/view_shortlist.php" class="btn">View My Shortlist</a>
         <a href="../homeowner/search_available_cleaners.php" class="btn">Find Cleaners</a>
-        <a href="../history/search_service_usage_history.php" class="btn">View Service History</a>
+        <a href="../history/service_usage_history.php" class="btn">View Service History</a>
     </div>
 </div>
 <?php endif; ?>
