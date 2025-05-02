@@ -13,32 +13,82 @@ require_once __DIR__ . '/../../config/Database.php';
 require_once __DIR__ . '/../../entity/UserProfile.php';
 require_once __DIR__ . '/../../controller/CreateUserProfileController.php';
 
+$userId = $_SESSION['user']['id'];
+$userRole = $_SESSION['role'];
+
+// Check user role, only cleaner and homeowner can create profiles
+if ($userRole !== 'cleaner' && $userRole !== 'homeowner') {
+    echo "<div class='error'>Only cleaners and homeowners can create profiles</div>";
+    require_once __DIR__ . '/../partials/footer.php';
+    exit;
+}
+
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userId = $_SESSION['user']['id'];
-    $data   = [
-        'fullName'     => trim($_POST['fullName']),
-        'avatarUrl'    => trim($_POST['avatarUrl']),
+    $data = [
+        'full_name'    => trim($_POST['full_name']),
+        'avatar_url'   => trim($_POST['avatar_url']),
         'bio'          => trim($_POST['bio']),
         'availability' => trim($_POST['availability']),
-        'status'       => 'active'
+        'user_type'    => $userRole
     ];
-    $ok      = (new CreateUserProfileController())->execute($userId, $data);
-    $message = $ok ? 'Profile created.' : 'Failed to create profile.';
+    
+    $controller = new CreateUserProfileController();
+    $ok = $controller->execute($userId, $data);
+    $message = $ok ? 'Profile created successfully.' : 'Failed to create profile.';
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Create Profile</title></head>
-<body>
-  <h2>Create Profile</h2>
-  <?php if ($message): ?><p><?= htmlspecialchars($message) ?></p><?php endif; ?>
+
+<h2>Create User Profile</h2>
+
+<div class="card">
+  <div class="card-title">Personal Information</div>
+  
+  <?php if ($message): ?>
+    <div class="<?= strpos($message, 'success') !== false ? 'success' : 'error' ?>">
+      <?= htmlspecialchars($message) ?>
+    </div>
+  <?php endif; ?>
+  
   <form method="post">
-    <label>Name: <input name="fullName" required></label><br>
-    <label>Avatar URL: <input name="avatarUrl"></label><br>
-    <label>Bio: <textarea name="bio"></textarea></label><br>
-    <label>Availability: <input name="availability"></label><br>
-    <button type="submit">Create</button>
+    <div class="form-group">
+      <label for="full_name">Full Name:</label>
+      <input type="text" id="full_name" name="full_name" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="avatar_url">Profile Picture URL:</label>
+      <input type="url" id="avatar_url" name="avatar_url" placeholder="https://example.com/your-image.jpg">
+    </div>
+    
+    <div class="form-group">
+      <label for="bio">Bio/Description:</label>
+      <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself or your services..."></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="availability">Availability:</label>
+      <input type="text" id="availability" name="availability" placeholder="e.g. Weekdays 9am-5pm, Weekends on request">
+    </div>
+    
+    <button type="submit" class="btn">Create Profile</button>
   </form>
-</body>
-</html>
+</div>
+
+<div class="card">
+  <div class="card-title">What Happens Next?</div>
+  <p>After creating your profile:</p>
+  <ul>
+    <li>Your profile will be visible to other users</li>
+    <li>You can update your information anytime</li>
+    <?php if ($userRole === 'cleaner'): ?>
+      <li>Create cleaning services to appear in search results</li>
+      <li>Homeowners can add you to their shortlist</li>
+    <?php else: ?>
+      <li>You can search for available cleaners</li>
+      <li>Add cleaners to your shortlist for easy access</li>
+    <?php endif; ?>
+  </ul>
+</div>
+
+<?php require_once __DIR__ . '/../partials/footer.php'; ?>

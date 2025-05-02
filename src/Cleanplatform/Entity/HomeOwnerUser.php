@@ -56,25 +56,52 @@ class HomeOwnerUser extends User {
 
     /** 搜索可用清洁工 */
     public function searchAvailableCleaners(array $criteria): array {
-        // 示例查询：按服务类型和最低评分
-        $sql = 'SELECT c.id,c.username,s.name,s.type,s.price'
-             . ' FROM cleaners c'
-             . ' JOIN cleaner_services s ON c.id = s.cleaner_id'
-             . ' WHERE s.type = ?';
+        // 准备SQL查询
+        $sql = 'SELECT c.id, c.username, s.id as service_id, s.name as sname, s.type as stype, s.price, p.full_name as full, p.bio
+                FROM cleaners c
+                JOIN cleaner_services s ON c.id = s.cleaner_id
+                LEFT JOIN user_profiles p ON c.id = p.user_id AND p.user_type = "cleaner"
+                WHERE c.status = "active"';
+        
+        $params = [];
+        $types = '';
+        
+        // 根据不同的搜索条件添加WHERE子句
+        if (!empty($criteria['keyword'])) {
+            $keyword = '%' . $criteria['keyword'] . '%';
+            $sql .= ' AND (s.name LIKE ? OR s.type LIKE ? OR s.description LIKE ? OR c.username LIKE ? OR p.full_name LIKE ?)';
+            $types .= 'sssss';
+            $params = array_merge($params, [$keyword, $keyword, $keyword, $keyword, $keyword]);
+        } elseif (!empty($criteria['service_type'])) {
+            // 保留原有的service_type搜索功能
+            $sql .= ' AND s.type = ?';
+            $types .= 's';
+            $params[] = $criteria['service_type'];
+        }
+        
+        // 添加排序
+        $sql .= ' ORDER BY c.rating DESC, s.price ASC';
+        
+        // 准备和执行查询
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 's', $criteria['service_type']);
+        if (!empty($params)) {
+            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result(
-            $stmt,$id,$username,$sname,$stype,$price
-        );
+        $result = mysqli_stmt_get_result($stmt);
+        
+        // 获取结果
         $res = [];
-        while (mysqli_stmt_fetch($stmt)) {
+        while ($row = mysqli_fetch_assoc($result)) {
             $res[] = [
-                'cleaner_id'=>$id,
-                'username'=>$username,
-                'service_name'=>$sname,
-                'service_type'=>$stype,
-                'price'=>$price
+                'id' => $row['id'],
+                'username' => $row['username'],
+                'service_id' => $row['service_id'],
+                'sname' => $row['sname'],
+                'stype' => $row['stype'],
+                'price' => $row['price'],
+                'full' => $row['full'],
+                'bio' => $row['bio']
             ];
         }
         mysqli_stmt_close($stmt);
@@ -83,15 +110,25 @@ class HomeOwnerUser extends User {
 
     /** 查看清洁工详情 */
     public function viewCleanerProfile(int $cleanerId): ?array {
-        $sql = 'SELECT id,username,profile,bio FROM homeowners WHERE id = ? LIMIT 1';
+        // 查询 cleaners 表基本信息及关联的 user_profiles 表资料
+        $sql = 'SELECT c.id, c.username, c.rating, c.status, c.email,
+                p.full_name, p.avatar_url, p.bio, p.availability, p.status as profile_status
+                FROM cleaners c
+                LEFT JOIN user_profiles p ON c.id = p.user_id AND p.user_type = "cleaner"
+                WHERE c.id = ? LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'i', $cleanerId);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt,$id,$username,$profile,$bio);
-        if (mysqli_stmt_fetch($stmt)) {
+        $result = mysqli_stmt_get_result($stmt);
+        
+        if ($row = mysqli_fetch_assoc($result)) {
             mysqli_stmt_close($stmt);
-            return compact('id','username','profile','bio');
+            // 为了前端代码兼容性，添加一些字段映射
+            $row['full'] = $row['full_name'] ?? '';
+            $row['bio'] = $row['bio'] ?? '';
+            return $row;
         }
+        
         mysqli_stmt_close($stmt);
         return null;
     }
@@ -141,5 +178,16 @@ class HomeOwnerUser extends User {
         }
         mysqli_stmt_close($stmt);
         return $res;
+    }
+
+    /** 从收藏中删除 */
+    public function removeFromShortlist(int $homeownerId, int $shortlistId): bool {
+        $sql = 'DELETE FROM shortlists WHERE id = ? AND homeowner_id = ?';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'ii', $shortlistId, $homeownerId);
+        $ok = mysqli_stmt_execute($stmt);
+        $affected = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok && $affected > 0;
     }
 }

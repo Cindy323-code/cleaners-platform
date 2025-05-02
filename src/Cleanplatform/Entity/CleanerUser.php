@@ -114,13 +114,17 @@ class CleanerUser extends User {
     }
 
     /** 删除服务 */
-    public function deleteService(int $id): bool {
-        $sql = 'DELETE FROM cleaner_services WHERE id = ?';
+    public function deleteService(int $id, int $cleanerId): bool {
+        // 修改SQL语句，增加cleanerId作为条件，确保只删除属于该清洁工的服务
+        $sql = 'DELETE FROM cleaner_services WHERE id = ? AND cleaner_id = ?';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'i', $id);
+        mysqli_stmt_bind_param($stmt, 'ii', $id, $cleanerId);
         $ok = mysqli_stmt_execute($stmt);
+        // 检查是否有行被影响（真正删除了服务）
+        $affected = mysqli_stmt_affected_rows($stmt);
         mysqli_stmt_close($stmt);
-        return $ok;
+        // 只有当真正删除了服务时才返回true
+        return $ok && $affected > 0;
     }
 
     /** 搜索服务 */

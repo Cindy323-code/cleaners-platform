@@ -62,8 +62,7 @@ if (!$isLoginPage):
       <a href="/Cleanplatform/boundary/homeowner/view_cleaner_profile.php">View Profile</a>
       <a href="/Cleanplatform/boundary/shortlist/add_to_shortlist.php">Add to Shortlist</a>
       <a href="/Cleanplatform/boundary/shortlist/view_shortlist.php">My Shortlist</a>
-      <a href="/Cleanplatform/boundary/shortlist/search_shortlist.php">Search Shortlist</a>
-      <a href="/Cleanplatform/boundary/history/search_service_usage_history.php">History</a>
+      <a href="/Cleanplatform/boundary/history/view_service_usage_details.php">History</a>
       <a href="/Cleanplatform/boundary/profile/view_user_profile.php">My Profile</a>
     <?php elseif ($userRole === 'manager'): ?>
       <a href="/Cleanplatform/boundary/category/create_service_category.php">Create Category</a>
