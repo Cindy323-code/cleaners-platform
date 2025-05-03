@@ -1,7 +1,7 @@
 <?php
 // entity/CleanerUser.php
 namespace Entity;
-require_once __DIR__ . '/User.php'; 
+require_once __DIR__ . '/User.php';
 
 class CleanerUser extends User {
     protected static string $tableName = 'cleaners';
@@ -132,9 +132,9 @@ class CleanerUser extends User {
         $like = "%$keyword%";
         $sql = 'SELECT id,name,type,price,description'
              . ' FROM cleaner_services'
-             . ' WHERE cleaner_id = ? AND name LIKE ?';
+             . ' WHERE cleaner_id = ? AND (name LIKE ? OR type LIKE ? OR description LIKE ?)';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'is', $cleanerId, $like);
+        mysqli_stmt_bind_param($stmt, 'isss', $cleanerId, $like, $like, $like);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt,$id,$name,$type,$price,$description);
         $res = [];

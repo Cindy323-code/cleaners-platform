@@ -75,12 +75,26 @@ $userId = $_SESSION['user']['id'];
             <div class="module-content">
                 <p>Create and manage your cleaning services.</p>
                 <div class="module-actions">
-                    <a href="/Cleanplatform/boundary/service/create_cleaning_service.php" class="btn btn-small">Create Service</a>
-                    <a href="/Cleanplatform/boundary/service/update_cleaning_service.php" class="btn btn-small">Update Service</a>
+                    <a href="/Cleanplatform/boundary/service/manage_cleaning_services.php?tab=create" class="btn btn-small">Create Service</a>
+                    <a href="/Cleanplatform/boundary/service/manage_cleaning_services.php?tab=view" class="btn btn-small">View Services</a>
                 </div>
             </div>
-            <div class="module-footer">
-                <a href="/Cleanplatform/boundary/service/view_cleaning_services.php" class="btn btn-small">View All Services</a>
+        </div>
+
+        <!-- Service Search Module -->
+        <div class="module">
+            <div class="module-header">
+                <h3 class="module-title">Search Services</h3>
+            </div>
+            <div class="module-content">
+                <p>Search through your cleaning services.</p>
+                <form action="/Cleanplatform/boundary/service/manage_cleaning_services.php" method="get" class="module-actions">
+                    <input type="hidden" name="tab" value="search">
+                    <div class="form-group">
+                        <input type="text" name="q" placeholder="Search by name, type, or description...">
+                    </div>
+                    <button type="submit" class="btn btn-small">Search Services</button>
+                </form>
             </div>
         </div>
 
@@ -244,12 +258,11 @@ $userId = $_SESSION['user']['id'];
             <div class="module-content">
                 <p>Create and manage service categories.</p>
                 <div class="module-actions">
-                    <a href="/Cleanplatform/boundary/category/manage_service_categories.php?tab=view" class="btn btn-small">View Categories</a>
+                <a href="/Cleanplatform/boundary/category/manage_service_categories.php?tab=create" class="btn btn-small">Create Category</a>
                 </div>
-                
+
             </div>
             <div class="module-footer">
-                <a href="/Cleanplatform/boundary/category/manage_service_categories.php?tab=create" class="btn btn-small">Create Category</a>
                 <a href="/Cleanplatform/boundary/category/manage_service_categories.php" class="btn btn-small">Manage Categories</a>
             </div>
         </div>

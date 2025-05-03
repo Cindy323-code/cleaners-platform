@@ -48,11 +48,7 @@ if (!$isLoginPage):
       <a href="/Cleanplatform/boundary/admin/suspend_user_account.php">Suspend User</a>
       <a href="/Cleanplatform/boundary/admin/search_user_account.php">Search Users</a>
     <?php elseif ($userRole === 'cleaner'): ?>
-      <a href="/Cleanplatform/boundary/service/create_cleaning_service.php">Create Service</a>
-      <a href="/Cleanplatform/boundary/service/view_cleaning_services.php">My Services</a>
-      <a href="/Cleanplatform/boundary/service/update_cleaning_service.php">Update Service</a>
-      <a href="/Cleanplatform/boundary/service/delete_cleaning_service.php">Delete Service</a>
-      <a href="/Cleanplatform/boundary/service/search_cleaning_services.php">Search Services</a>
+      <a href="/Cleanplatform/boundary/service/manage_cleaning_services.php">Manage Services</a>
       <a href="/Cleanplatform/boundary/history/view_service_profile_views.php">Profile Views</a>
       <a href="/Cleanplatform/boundary/history/view_service_shortlist_count.php">Shortlist Count</a>
       <a href="/Cleanplatform/boundary/history/search_confirmed_matches.php">Matches</a>
