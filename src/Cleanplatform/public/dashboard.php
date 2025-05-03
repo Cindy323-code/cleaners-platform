@@ -22,21 +22,12 @@ $userId = $_SESSION['user']['id'];
             </div>
             <div class="module-content">
                 <p>Create new user accounts for administrators, cleaners, homeowners, and managers.</p>
-                <form action="/Cleanplatform/boundary/admin/create_user_account.php" method="get" class="module-actions">
-                    <label for="user-type">Select User Type:</label>
-                    <select name="user-type" id="user-type">
-                        <option value="admin">Administrator</option>
-                        <option value="cleaner">Cleaner</option>
-                        <option value="homeowner">Homeowner</option>
-                        <option value="manager">Manager</option>
-                    </select>
-                </form>
             </div>
             <div class="module-footer">
                 <a href="/Cleanplatform/boundary/admin/create_user_account.php" class="btn btn-small">Create User</a>
             </div>
         </div>
-        
+
         <!-- User Management Module -->
         <div class="module">
             <div class="module-header">
@@ -53,7 +44,7 @@ $userId = $_SESSION['user']['id'];
                 <a href="/Cleanplatform/boundary/admin/suspend_user_account.php" class="btn btn-small">Suspend User</a>
             </div>
         </div>
-        
+
         <!-- User Search Module -->
         <div class="module">
             <div class="module-header">
@@ -92,7 +83,7 @@ $userId = $_SESSION['user']['id'];
                 <a href="/Cleanplatform/boundary/service/view_cleaning_services.php" class="btn btn-small">View All Services</a>
             </div>
         </div>
-        
+
         <!-- Statistics Module -->
         <div class="module">
             <div class="module-header">
@@ -109,7 +100,7 @@ $userId = $_SESSION['user']['id'];
                 <a href="/Cleanplatform/boundary/history/search_confirmed_matches.php" class="btn btn-small">View Matches</a>
             </div>
         </div>
-        
+
         <!-- Profile Module -->
         <div class="module">
             <div class="module-header">
@@ -146,7 +137,7 @@ $userId = $_SESSION['user']['id'];
                        JOIN cleaners c ON cs.cleaner_id = c.id
                        ORDER BY cs.created_at DESC LIMIT 5';
                 $result = mysqli_query($db, $sql);
-                if ($result && mysqli_num_rows($result) > 0): 
+                if ($result && mysqli_num_rows($result) > 0):
                 ?>
                 <div class="service-list">
                     <?php while ($service = mysqli_fetch_assoc($result)): ?>
@@ -195,7 +186,7 @@ $userId = $_SESSION['user']['id'];
                 <a href="/Cleanplatform/boundary/homeowner/search_available_cleaners.php" class="btn btn-small">All Services</a>
             </div>
         </div>
-        
+
         <!-- Shortlist Module -->
         <div class="module">
             <div class="module-header">
@@ -211,7 +202,7 @@ $userId = $_SESSION['user']['id'];
                 <a href="/Cleanplatform/boundary/shortlist/add_to_shortlist.php" class="btn btn-small">Add to Shortlist by ID</a>
             </div>
         </div>
-        
+
         <!-- History Module -->
         <div class="module">
             <div class="module-header">
@@ -224,7 +215,7 @@ $userId = $_SESSION['user']['id'];
                 </div>
             </div>
         </div>
-        
+
         <!-- Profile Module -->
         <div class="module">
             <div class="module-header">
@@ -253,15 +244,16 @@ $userId = $_SESSION['user']['id'];
             <div class="module-content">
                 <p>Create and manage service categories.</p>
                 <div class="module-actions">
-                    <a href="/Cleanplatform/boundary/category/create_service_category.php" class="btn btn-small">Create Category</a>
-                    <a href="/Cleanplatform/boundary/category/view_service_categories.php" class="btn btn-small">View Categories</a>
+                    <a href="/Cleanplatform/boundary/category/manage_service_categories.php?tab=view" class="btn btn-small">View Categories</a>
                 </div>
+                
             </div>
             <div class="module-footer">
-                <a href="/Cleanplatform/boundary/category/update_service_category.php" class="btn btn-small">Update Category</a>
+                <a href="/Cleanplatform/boundary/category/manage_service_categories.php?tab=create" class="btn btn-small">Create Category</a>
+                <a href="/Cleanplatform/boundary/category/manage_service_categories.php" class="btn btn-small">Manage Categories</a>
             </div>
         </div>
-        
+
         <!-- Search Categories Module -->
         <div class="module">
             <div class="module-header">
@@ -269,18 +261,18 @@ $userId = $_SESSION['user']['id'];
             </div>
             <div class="module-content">
                 <p>Search for service categories by name or description.</p>
-                <form action="/Cleanplatform/boundary/category/search_service_category.php" method="get" class="module-actions">
+                <form action="/Cleanplatform/boundary/category/manage_service_categories.php" method="get" class="module-actions">
+                    <input type="hidden" name="tab" value="search">
                     <div class="form-group">
                         <input type="text" name="q" placeholder="Enter category name...">
                     </div>
+                    <div class="module-footer">
                     <button type="submit" class="btn btn-small">Search Categories</button>
+                    </div>
                 </form>
             </div>
-            <div class="module-footer">
-                <a href="/Cleanplatform/boundary/category/search_service_category.php" class="btn btn-small">All Categories</a>
-            </div>
         </div>
-        
+
         <!-- Reports Module -->
         <div class="module">
             <div class="module-header">
@@ -289,12 +281,12 @@ $userId = $_SESSION['user']['id'];
             <div class="module-content">
                 <p>Generate and view platform reports.</p>
                 <div class="module-actions">
-                    <a href="/Cleanplatform/boundary/report/daily.php" class="btn btn-small">Daily Report</a>
-                    <a href="/Cleanplatform/boundary/report/weekly.php" class="btn btn-small">Weekly Report</a>
+                    <a href="/Cleanplatform/boundary/report/manage_reports.php?tab=daily" class="btn btn-small">Daily Report</a>
+                    <a href="/Cleanplatform/boundary/report/manage_reports.php?tab=weekly" class="btn btn-small">Weekly Report</a>
                 </div>
             </div>
             <div class="module-footer">
-                <a href="/Cleanplatform/boundary/report/monthly.php" class="btn btn-small">Monthly Report</a>
+                <a href="/Cleanplatform/boundary/report/manage_reports.php?tab=monthly" class="btn btn-small">Monthly Report</a>
             </div>
         </div>
     </div>

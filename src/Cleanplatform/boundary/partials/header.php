@@ -38,7 +38,7 @@ if (!$isLoginPage):
       <?php endif; ?>
     </div>
   </header>
-  
+
   <nav class="nav">
     <a href="/Cleanplatform/public/dashboard.php">Dashboard</a>
     <?php if ($userRole === 'admin'): ?>
@@ -65,16 +65,10 @@ if (!$isLoginPage):
       <a href="/Cleanplatform/boundary/history/service_usage_history.php">History</a>
       <a href="/Cleanplatform/boundary/profile/view_user_profile.php">My Profile</a>
     <?php elseif ($userRole === 'manager'): ?>
-      <a href="/Cleanplatform/boundary/category/create_service_category.php">Create Category</a>
-      <a href="/Cleanplatform/boundary/category/view_service_categories.php">View Categories</a>
-      <a href="/Cleanplatform/boundary/category/update_service_category.php">Update Category</a>
-      <a href="/Cleanplatform/boundary/category/delete_service_category.php">Delete Category</a>
-      <a href="/Cleanplatform/boundary/category/search_service_category.php">Search Categories</a>
-      <a href="/Cleanplatform/boundary/report/daily.php">Daily Report</a>
-      <a href="/Cleanplatform/boundary/report/weekly.php">Weekly Report</a>
-      <a href="/Cleanplatform/boundary/report/monthly.php">Monthly Report</a>
+      <a href="/Cleanplatform/boundary/category/manage_service_categories.php">Manage Categories</a>
+      <a href="/Cleanplatform/boundary/report/manage_reports.php">Reports</a>
     <?php endif; ?>
   </nav>
-  
+
   <div class="content">
 <?php endif; ?>

@@ -1,6 +1,6 @@
-/* 
+/*
   Common style file - Unified UI Design
-  Based on the login page design style 
+  Based on the login page design style
 */
 
 :root {
@@ -33,7 +33,7 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 30px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1000px; /* Fixed width for all pages */
     margin: 20px auto;
 }
 
@@ -285,17 +285,87 @@ table tr:hover {
     border: 1px solid rgba(234, 67, 53, 0.2);
 }
 
+/* Alert styles */
+.alert {
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    border-left: 4px solid;
+}
+
+.alert-success, .success {
+    background-color: rgba(52, 168, 83, 0.1);
+    color: #34a853;
+    border-color: #34a853;
+}
+
+.alert-error, .error {
+    background-color: rgba(234, 67, 53, 0.1);
+    color: var(--error-color);
+    border-color: var(--error-color);
+}
+
+/* Button variations */
+.btn-secondary {
+    background-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-danger {
+    background-color: #ea4335;
+}
+
+.btn-danger:hover {
+    background-color: #d73125;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 30px 0;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.empty-state h3 {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    color: #777;
+}
+
+/* Page footer */
+.page-footer {
+    margin-top: 30px;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .container {
         padding: 20px;
     }
-    
+
     .header {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .header .user-info {
         margin-top: 10px;
         text-align: left;

@@ -1,7 +1,8 @@
 <?php
 // entity/HomeOwnerUser.php
 namespace Entity;
-require_once __DIR__ . '/User.php'; 
+require_once __DIR__ . '/User.php';
+use Exception;
 
 class HomeOwnerUser extends User {
     protected static string $tableName = 'homeowners';
@@ -62,10 +63,10 @@ class HomeOwnerUser extends User {
                 JOIN cleaner_services s ON c.id = s.cleaner_id
                 LEFT JOIN user_profiles p ON c.id = p.user_id AND p.user_type = "cleaner"
                 WHERE c.status = "active"';
-        
+
         $params = [];
         $types = '';
-        
+
         // 根据不同的搜索条件添加WHERE子句
         if (!empty($criteria['keyword'])) {
             $keyword = '%' . $criteria['keyword'] . '%';
@@ -78,10 +79,10 @@ class HomeOwnerUser extends User {
             $types .= 's';
             $params[] = $criteria['service_type'];
         }
-        
+
         // 添加排序
         $sql .= ' ORDER BY c.rating DESC, s.price ASC';
-        
+
         // 准备和执行查询
         $stmt = mysqli_prepare($this->conn, $sql);
         if (!empty($params)) {
@@ -89,7 +90,7 @@ class HomeOwnerUser extends User {
         }
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        
+
         // 获取结果
         $res = [];
         while ($row = mysqli_fetch_assoc($result)) {
@@ -120,17 +121,73 @@ class HomeOwnerUser extends User {
         mysqli_stmt_bind_param($stmt, 'i', $cleanerId);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        
+
         if ($row = mysqli_fetch_assoc($result)) {
             mysqli_stmt_close($stmt);
             // 为了前端代码兼容性，添加一些字段映射
             $row['full'] = $row['full_name'] ?? '';
             $row['bio'] = $row['bio'] ?? '';
+
+            // 更新该清洁工所有服务的浏览量
+            $this->updateCleanerProfileViews($cleanerId);
+
             return $row;
         }
-        
+
         mysqli_stmt_close($stmt);
         return null;
+    }
+
+    /**
+     * 更新清洁工服务的浏览量
+     * @param int $cleanerId 清洁工ID
+     * @return bool 更新是否成功
+     */
+    private function updateCleanerProfileViews(int $cleanerId): bool {
+        // 获取该清洁工的所有服务ID
+        $servicesSql = 'SELECT id FROM cleaner_services WHERE cleaner_id = ?';
+        $servicesStmt = mysqli_prepare($this->conn, $servicesSql);
+        mysqli_stmt_bind_param($servicesStmt, 'i', $cleanerId);
+        mysqli_stmt_execute($servicesStmt);
+        $servicesResult = mysqli_stmt_get_result($servicesStmt);
+
+        $success = true;
+
+        while ($service = mysqli_fetch_assoc($servicesResult)) {
+            $serviceId = $service['id'];
+
+            // 检查service_stats表中是否已有该服务的记录
+            $checkStatsSql = 'SELECT service_id FROM service_stats WHERE service_id = ? LIMIT 1';
+            $checkStatsStmt = mysqli_prepare($this->conn, $checkStatsSql);
+            mysqli_stmt_bind_param($checkStatsStmt, 'i', $serviceId);
+            mysqli_stmt_execute($checkStatsStmt);
+            mysqli_stmt_store_result($checkStatsStmt);
+            $statsExists = mysqli_stmt_num_rows($checkStatsStmt) > 0;
+            mysqli_stmt_close($checkStatsStmt);
+
+            if ($statsExists) {
+                // 更新现有记录的view_count
+                $updateStatsSql = 'UPDATE service_stats SET view_count = view_count + 1 WHERE service_id = ?';
+                $updateStatsStmt = mysqli_prepare($this->conn, $updateStatsSql);
+                mysqli_stmt_bind_param($updateStatsStmt, 'i', $serviceId);
+                $statsOk = mysqli_stmt_execute($updateStatsStmt);
+                mysqli_stmt_close($updateStatsStmt);
+            } else {
+                // 创建新记录
+                $insertStatsSql = 'INSERT INTO service_stats (service_id, view_count, shortlist_count) VALUES (?, 1, 0)';
+                $insertStatsStmt = mysqli_prepare($this->conn, $insertStatsSql);
+                mysqli_stmt_bind_param($insertStatsStmt, 'i', $serviceId);
+                $statsOk = mysqli_stmt_execute($insertStatsStmt);
+                mysqli_stmt_close($insertStatsStmt);
+            }
+
+            if (!$statsOk) {
+                $success = false;
+            }
+        }
+
+        mysqli_stmt_close($servicesStmt);
+        return $success;
     }
 
     /** 添加至收藏 */
@@ -143,12 +200,12 @@ class HomeOwnerUser extends User {
         mysqli_stmt_store_result($checkStmt);
         $exists = mysqli_stmt_num_rows($checkStmt) > 0;
         mysqli_stmt_close($checkStmt);
-        
+
         // 如果服务ID不存在，返回false
         if (!$exists) {
             return false;
         }
-        
+
         // 检查是否已经添加到收藏夹
         $dupeSql = 'SELECT id FROM shortlists WHERE homeowner_id = ? AND service_id = ? LIMIT 1';
         $dupeStmt = mysqli_prepare($this->conn, $dupeSql);
@@ -157,19 +214,64 @@ class HomeOwnerUser extends User {
         mysqli_stmt_store_result($dupeStmt);
         $isDuplicate = mysqli_stmt_num_rows($dupeStmt) > 0;
         mysqli_stmt_close($dupeStmt);
-        
+
         // 如果已经在收藏夹中，返回true（视为成功添加）
         if ($isDuplicate) {
             return true;
         }
-        
-        // 添加到收藏夹
-        $sql = 'INSERT INTO shortlists (homeowner_id, service_id, added_at) VALUES (?, ?, NOW())';
-        $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'ii', $homeownerId, $serviceId);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+
+        // 开始事务
+        mysqli_begin_transaction($this->conn);
+
+        try {
+            // 添加到收藏夹
+            $sql = 'INSERT INTO shortlists (homeowner_id, service_id, added_at) VALUES (?, ?, NOW())';
+            $stmt = mysqli_prepare($this->conn, $sql);
+            mysqli_stmt_bind_param($stmt, 'ii', $homeownerId, $serviceId);
+            $ok = mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+
+            if ($ok) {
+                // 检查service_stats表中是否已有该服务的记录
+                $checkStatsSql = 'SELECT service_id FROM service_stats WHERE service_id = ? LIMIT 1';
+                $checkStatsStmt = mysqli_prepare($this->conn, $checkStatsSql);
+                mysqli_stmt_bind_param($checkStatsStmt, 'i', $serviceId);
+                mysqli_stmt_execute($checkStatsStmt);
+                mysqli_stmt_store_result($checkStatsStmt);
+                $statsExists = mysqli_stmt_num_rows($checkStatsStmt) > 0;
+                mysqli_stmt_close($checkStatsStmt);
+
+                if ($statsExists) {
+                    // 更新现有记录的shortlist_count
+                    $updateStatsSql = 'UPDATE service_stats SET shortlist_count = shortlist_count + 1 WHERE service_id = ?';
+                    $updateStatsStmt = mysqli_prepare($this->conn, $updateStatsSql);
+                    mysqli_stmt_bind_param($updateStatsStmt, 'i', $serviceId);
+                    $statsOk = mysqli_stmt_execute($updateStatsStmt);
+                    mysqli_stmt_close($updateStatsStmt);
+                } else {
+                    // 创建新记录
+                    $insertStatsSql = 'INSERT INTO service_stats (service_id, shortlist_count, view_count) VALUES (?, 1, 0)';
+                    $insertStatsStmt = mysqli_prepare($this->conn, $insertStatsSql);
+                    mysqli_stmt_bind_param($insertStatsStmt, 'i', $serviceId);
+                    $statsOk = mysqli_stmt_execute($insertStatsStmt);
+                    mysqli_stmt_close($insertStatsStmt);
+                }
+
+                if (!$statsOk) {
+                    // 如果更新统计失败，回滚事务
+                    mysqli_rollback($this->conn);
+                    return false;
+                }
+            }
+
+            // 提交事务
+            mysqli_commit($this->conn);
+            return $ok;
+        } catch (Exception $e) {
+            // 发生异常时回滚事务
+            mysqli_rollback($this->conn);
+            return false;
+        }
     }
 
     /** 查看我的收藏 */
