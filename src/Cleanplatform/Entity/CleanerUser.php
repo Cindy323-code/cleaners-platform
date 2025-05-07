@@ -156,11 +156,21 @@ class CleanerUser extends User {
     }
     
     /**
-     * 执行创建服务操作，对应CreateCleaningServiceController
+     * 执行创建用户账户操作，对应CreateUserAccountController
      * @param array $data
      * @return bool
      */
     public function executeCreate(array $data): bool
+    {
+        return $this->createUser($data);
+    }
+    
+    /**
+     * 执行创建服务操作，对应CreateCleaningServiceController
+     * @param array $data
+     * @return bool
+     */
+    public function executeCreateService(array $data): bool
     {
         return $this->createService($data);
     }

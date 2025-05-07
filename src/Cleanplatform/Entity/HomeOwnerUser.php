@@ -70,6 +70,16 @@ class HomeOwnerUser extends User {
         return $this->viewCleanerProfile($cleanerId);
     }
 
+    /**
+     * 执行创建用户账户操作，对应CreateUserAccountController
+     * @param array $data
+     * @return bool
+     */
+    public function executeCreate(array $data): bool
+    {
+        return $this->createUser($data);
+    }
+
     /** 创建用户账户 */
     public function createUser(array $data): bool {
         $sql = 'INSERT INTO ' . static::$tableName
