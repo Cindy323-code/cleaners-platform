@@ -1,16 +1,16 @@
 <?php
 namespace Controller;
 
-use Config\Database;
+use Entity\CleanerUser;
 
 class CleanerLogoutController {
-    private $db;
+    private CleanerUser $entity;
 
     public function __construct() {
-        $this->db = Database::getConnection();
+        $this->entity = new CleanerUser();
     }
 
     public function execute() : void {
-return session_destroy();
+        $this->entity->executeLogout();
     }
 }

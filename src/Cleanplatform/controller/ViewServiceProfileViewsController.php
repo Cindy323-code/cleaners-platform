@@ -1,19 +1,16 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\MatchHistory;
 
-        class ViewServiceProfileViewsController {
-            private $db;
+class ViewServiceProfileViewsController {
     private MatchHistory $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new MatchHistory($this->db);
-            }
+    public function __construct() {
+        $this->entity = new MatchHistory();
+    }
 
-            public function execute(int $cleanerId) : int {
-        return $this->entity->getViewCount($cleanerId);
-            }
-        }
+    public function execute(int $cleanerId) : int {
+        return $this->entity->executeGetViewCount($cleanerId);
+    }
+}

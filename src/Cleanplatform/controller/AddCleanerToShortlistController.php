@@ -1,19 +1,16 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\HomeOwnerUser;
 
-        class AddCleanerToShortlistController {
-            private $db;
+class AddCleanerToShortlistController {
     private HomeOwnerUser $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new HomeOwnerUser($this->db);
-            }
+    public function __construct() {
+        $this->entity = new HomeOwnerUser();
+    }
 
-            public function execute(int $homeownerId, int $serviceId) : bool {
-        return $this->entity->addToShortlist($homeownerId,$serviceId);
-            }
-        }
+    public function execute(int $homeownerId, int $serviceId) : bool {
+        return $this->entity->executeAddToShortlist($homeownerId, $serviceId);
+    }
+}

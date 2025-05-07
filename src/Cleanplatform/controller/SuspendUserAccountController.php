@@ -1,19 +1,17 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\AdminUser;
 
-        class SuspendUserAccountController {
-            private $db;
+class SuspendUserAccountController {
     private AdminUser $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new AdminUser($this->db);
-            }
+    public function __construct() {
+        $this->entity = new AdminUser();
+    }
 
-            public function execute(string $username) : bool {
-        return $this->entity->suspendUser($username);
-            }
-        }
+    public function execute(string $username) : bool {
+        // 使用entity的executeSuspend方法暂停用户
+        return $this->entity->executeSuspend($username);
+    }
+}

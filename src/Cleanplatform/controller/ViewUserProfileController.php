@@ -1,16 +1,13 @@
 <?php
 namespace Controller;
 
-use Config\Database;
 use Entity\UserProfile;
 
 class ViewUserProfileController {
-    private $db;
     private UserProfile $entity;
 
     public function __construct() {
-        $this->db = Database::getConnection();
-        $this->entity = new UserProfile($this->db);
+        $this->entity = new UserProfile();
     }
 
     public function execute(int $userId, string $userRole) : ?array {
@@ -22,7 +19,7 @@ class ViewUserProfileController {
             return null;
         }
         
-        // 调用正确的方法：viewProfile而不是read
-        return $this->entity->viewProfile($userId, $userType);
+        // 调用对应的方法
+        return $this->entity->execute($userId, $userType);
     }
 }

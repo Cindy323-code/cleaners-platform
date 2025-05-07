@@ -1,16 +1,16 @@
 <?php
 namespace Controller;
 
-use Config\Database;
+use Entity\HomeOwnerUser;
 
 class HomeownerLogoutController {
-    private $db;
+    private HomeOwnerUser $entity;
 
     public function __construct() {
-        $this->db = Database::getConnection();
+        $this->entity = new HomeOwnerUser();
     }
 
     public function execute() : void {
-return session_destroy();
+        $this->entity->executeLogout();
     }
 }

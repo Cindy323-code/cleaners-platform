@@ -1,19 +1,20 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\UserProfile;
 
-        class DeactivateUserProfileController {
-            private $db;
+class DeactivateUserProfileController {
     private UserProfile $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new UserProfile($this->db);
-            }
+    public function __construct() {
+        $this->entity = new UserProfile();
+    }
 
-            public function execute(int $userId) : bool {
-        return $this->entity->deactivate($userId);
-            }
-        }
+    public function execute(int $userId) : bool {
+        // 获取用户类型
+        $userType = $_SESSION['role'] ?? 'homeowner';
+        
+        // 调用entity中的相应方法
+        return $this->entity->executeDeactivate($userId, $userType);
+    }
+}

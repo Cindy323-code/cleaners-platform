@@ -7,6 +7,69 @@ use Exception;
 class HomeOwnerUser extends User {
     protected static string $tableName = 'homeowners';
 
+    /**
+     * 执行查看收藏操作，对应ViewShortlistController
+     * @param int $homeownerId
+     * @return array
+     */
+    public function executeViewShortlist(int $homeownerId): array
+    {
+        return $this->viewShortlist($homeownerId);
+    }
+    
+    /**
+     * 执行搜索收藏操作，对应SearchShortlistController
+     * @param int $homeownerId
+     * @param string $keyword
+     * @return array
+     */
+    public function executeSearchShortlist(int $homeownerId, string $keyword): array
+    {
+        return $this->searchShortlist($homeownerId, $keyword);
+    }
+    
+    /**
+     * 执行添加到收藏操作，对应AddCleanerToShortlistController
+     * @param int $homeownerId
+     * @param int $serviceId
+     * @return bool
+     */
+    public function executeAddToShortlist(int $homeownerId, int $serviceId): bool
+    {
+        return $this->addToShortlist($homeownerId, $serviceId);
+    }
+    
+    /**
+     * 执行从收藏中移除操作，对应RemoveFromShortlistController
+     * @param int $homeownerId
+     * @param int $shortlistId
+     * @return bool
+     */
+    public function executeRemoveFromShortlist(int $homeownerId, int $shortlistId): bool
+    {
+        return $this->removeFromShortlist($homeownerId, $shortlistId);
+    }
+    
+    /**
+     * 执行搜索可用清洁工操作，对应SearchAvailableCleanersController
+     * @param array $criteria
+     * @return array
+     */
+    public function executeSearchAvailableCleaners(array $criteria): array
+    {
+        return $this->searchAvailableCleaners($criteria);
+    }
+    
+    /**
+     * 执行查看清洁工档案操作，对应ViewCleanerProfileController
+     * @param int $cleanerId
+     * @return array|null
+     */
+    public function executeViewCleanerProfile(int $cleanerId): ?array
+    {
+        return $this->viewCleanerProfile($cleanerId);
+    }
+
     /** 创建用户账户 */
     public function createUser(array $data): bool {
         $sql = 'INSERT INTO ' . static::$tableName

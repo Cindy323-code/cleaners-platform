@@ -1,16 +1,16 @@
 <?php
 namespace Controller;
 
-use Config\Database;
+use Entity\PlatformManager;
 
 class PlatformManagerLogoutController {
-    private $db;
+    private PlatformManager $entity;
 
     public function __construct() {
-        $this->db = Database::getConnection();
+        $this->entity = new PlatformManager();
     }
 
     public function execute() : void {
-return session_destroy();
+        $this->entity->executeLogout();
     }
 }

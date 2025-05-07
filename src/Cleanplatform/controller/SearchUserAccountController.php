@@ -1,19 +1,16 @@
 <?php
 namespace Controller;
 
-use Config\Database;
 use Entity\AdminUser;
 
 class SearchUserAccountController {
-    private $db;
     private AdminUser $entity;
 
     public function __construct() {
-        $this->db = Database::getConnection();
-        $this->entity = new AdminUser($this->db);
+        $this->entity = new AdminUser();
     }
 
     public function execute(string $keyword = '', string $role = '', string $status = '') : array {
-        return $this->entity->searchUsers($keyword, $role, $status);
+        return $this->entity->executeSearch($keyword, $role, $status);
     }
 }

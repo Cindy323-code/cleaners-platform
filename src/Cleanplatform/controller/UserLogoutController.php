@@ -1,16 +1,18 @@
 <?php
 namespace Controller;
 
-use Config\Database;
+use Entity\User;
+use Entity\AdminUser;
 
 class UserLogoutController {
-    private $db;
+    private User $entity;
 
     public function __construct() {
-        $this->db = Database::getConnection();
+        // 使用任意用户实体，因为logout方法是在基类中
+        $this->entity = new AdminUser();
     }
 
     public function execute() : void {
-return session_destroy();
+        $this->entity->executeLogout();
     }
 }

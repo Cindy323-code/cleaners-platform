@@ -1,16 +1,13 @@
 <?php
 namespace Controller;
 
-use Config\Database;
 use Entity\UserProfile;
 
 class CreateUserProfileController {
-    private $db;
     private UserProfile $entity;
 
     public function __construct() {
-        $this->db = Database::getConnection();
-        $this->entity = new UserProfile($this->db);
+        $this->entity = new UserProfile();
     }
 
     public function execute(int $userId, array $data) : bool {
@@ -22,7 +19,7 @@ class CreateUserProfileController {
             return false; // admin和manager角色暂时不支持个人资料
         }
         
-        // 调用正确的方法：createProfile而不是create
-        return $this->entity->createProfile($userId, $userType, $data);
+        // 调用与控制器同名的方法
+        return $this->entity->execute($userId, $userType, $data);
     }
 }

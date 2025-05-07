@@ -2,14 +2,61 @@
 namespace Entity;
 
 use mysqli;
+use Config\Database;
 require_once __DIR__ . '/User.php'; 
 class UserProfile
 {
     private mysqli $conn;
 
-    public function __construct(mysqli $db)
+    public function __construct()
     {
-        $this->conn = $db;
+        $this->conn = Database::getConnection();
+    }
+
+    /**
+     * 统一执行方法，根据参数数量和类型分发到不同操作
+     * @param int    $userId
+     * @param string $userType cleaner|homeowner
+     * @param array|null  $data  可选，如果提供则创建或更新资料
+     * @return bool|array|null
+     */
+    public function execute(int $userId, string $userType, array $data = null)
+    {
+        // 如果没有提供数据，执行查看操作
+        if ($data === null) {
+            return $this->viewProfile($userId, $userType);
+        }
+        
+        // 检查个人档案是否已存在
+        $profile = $this->viewProfile($userId, $userType);
+        if ($profile === null) {
+            // 如果不存在，执行创建操作
+            return $this->createProfile($userId, $userType, $data);
+        } else {
+            // 如果存在，执行更新操作
+            return $this->updateProfile($userId, $userType, $data);
+        }
+    }
+
+    /**
+     * 执行停用档案操作
+     * @param int    $userId
+     * @param string $userType cleaner|homeowner
+     * @return bool
+     */
+    public function executeDeactivate(int $userId, string $userType): bool
+    {
+        return $this->deactivateProfile($userId, $userType);
+    }
+
+    /**
+     * 执行搜索档案操作
+     * @param array $criteria ['full_name','user_type']
+     * @return array
+     */
+    public function executeSearch(array $criteria): array
+    {
+        return $this->searchProfiles($criteria);
     }
 
     /**

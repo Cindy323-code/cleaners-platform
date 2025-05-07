@@ -1,19 +1,16 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\HomeOwnerUser;
 
-        class ViewShortlistController {
-            private $db;
+class ViewShortlistController {
     private HomeOwnerUser $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new HomeOwnerUser($this->db);
-            }
+    public function __construct() {
+        $this->entity = new HomeOwnerUser();
+    }
 
-            public function execute(int $homeownerId) : array {
-        return $this->entity->viewShortlist($homeownerId);
-            }
-        }
+    public function execute(int $homeownerId) : array {
+        return $this->entity->executeViewShortlist($homeownerId);
+    }
+}

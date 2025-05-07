@@ -1,19 +1,16 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\PlatformManager;
 
-        class GenerateMonthlyReportController {
-            private $db;
+class GenerateMonthlyReportController {
     private PlatformManager $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new PlatformManager($this->db);
-            }
+    public function __construct() {
+        $this->entity = new PlatformManager();
+    }
 
-            public function execute(int $year, int $month) : array {
-        return $this->entity->generateMonthlyReport($year,$month);
-            }
-        }
+    public function execute(int $year, int $month) : array {
+        return $this->entity->executeGenerateMonthlyReport($year, $month);
+    }
+}

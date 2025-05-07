@@ -1,19 +1,16 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\MatchHistory;
 
-        class ViewConfirmedMatchDetailsController {
-            private $db;
+class ViewConfirmedMatchDetailsController {
     private MatchHistory $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new MatchHistory($this->db);
-            }
+    public function __construct() {
+        $this->entity = new MatchHistory();
+    }
 
-            public function execute(int $matchId) : ?array {
-        return $this->entity->readMatchDetails($matchId);
-            }
-        }
+    public function execute(int $matchId) : ?array {
+        return $this->entity->executeReadMatchDetails($matchId);
+    }
+}

@@ -1,19 +1,16 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\HomeOwnerUser;
 
-        class SearchShortlistController {
-            private $db;
+class SearchShortlistController {
     private HomeOwnerUser $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new HomeOwnerUser($this->db);
-            }
+    public function __construct() {
+        $this->entity = new HomeOwnerUser();
+    }
 
-            public function execute(int $homeownerId, string $keyword) : array {
-        return $this->entity->searchShortlist($homeownerId,$keyword);
-            }
-        }
+    public function execute(int $homeownerId, string $keyword) : array {
+        return $this->entity->executeSearchShortlist($homeownerId, $keyword);
+    }
+}

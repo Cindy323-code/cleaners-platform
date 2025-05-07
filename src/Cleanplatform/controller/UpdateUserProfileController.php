@@ -1,19 +1,20 @@
 <?php
 namespace Controller;
 
-        use Config\Database;
 use Entity\UserProfile;
 
-        class UpdateUserProfileController {
-            private $db;
+class UpdateUserProfileController {
     private UserProfile $entity;
 
-            public function __construct() {
-                $this->db = Database::getConnection();
-        $this->entity = new UserProfile($this->db);
-            }
+    public function __construct() {
+        $this->entity = new UserProfile();
+    }
 
-            public function execute(int $userId, array $fields) : bool {
-        return $this->entity->update($userId, $fields);
-            }
-        }
+    public function execute(int $userId, array $fields) : bool {
+        // 获取用户类型
+        $userType = $_SESSION['role'] ?? 'homeowner';
+        
+        // 调用entity中的execute方法
+        return $this->entity->execute($userId, $userType, $fields);
+    }
+}

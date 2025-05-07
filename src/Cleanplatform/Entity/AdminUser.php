@@ -6,6 +6,68 @@ require_once __DIR__ . '/User.php';
 class AdminUser extends User {
     protected static string $tableName = 'admin_users';
 
+    /**
+     * 执行查看用户操作，对应ViewUserAccountController
+     * @param string $username
+     * @return array|null
+     */
+    public function execute(string $username): ?array 
+    {
+        return $this->viewUser($username);
+    }
+    
+    /**
+     * 执行获取所有用户操作，对应ViewUserAccountController的getAllUsers方法
+     * @return array
+     */
+    public function executeGetAll(): array
+    {
+        return $this->getAllUsers();
+    }
+    
+    /**
+     * 执行创建用户操作，对应CreateUserAccountController
+     * @param array $data
+     * @return bool
+     */
+    public function executeCreate(array $data): bool
+    {
+        return $this->createUser($data);
+    }
+    
+    /**
+     * 执行更新用户操作，对应UpdateUserAccountController
+     * @param string $username
+     * @param array $fields
+     * @return bool
+     */
+    public function executeUpdate(string $username, array $fields): bool
+    {
+        return $this->updateUser($username, $fields);
+    }
+    
+    /**
+     * 执行暂停用户操作，对应SuspendUserAccountController
+     * @param string $username
+     * @return bool
+     */
+    public function executeSuspend(string $username): bool
+    {
+        return $this->suspendUser($username);
+    }
+    
+    /**
+     * 执行搜索用户操作，对应SearchUserAccountController
+     * @param string $keyword
+     * @param string $role
+     * @param string $status
+     * @return array
+     */
+    public function executeSearch(string $keyword = '', string $role = '', string $status = ''): array
+    {
+        return $this->searchUsers($keyword, $role, $status);
+    }
+
     /** 创建用户账户 */
     public function createUser(array $data): bool {
         $sql = 'INSERT INTO ' . static::$tableName

@@ -2,14 +2,77 @@
 namespace Entity;
 
 use mysqli;
+use Config\Database;
 require_once __DIR__ . '/User.php'; 
 class MatchHistory
 {
     private mysqli $conn;
 
-    public function __construct(mysqli $db)
+    public function __construct()
     {
-        $this->conn = $db;
+        $this->conn = Database::getConnection();
+    }
+    
+    /**
+     * 执行查看匹配详情操作，对应ViewConfirmedMatchDetailsController
+     * @param int $matchId
+     * @return array|null
+     */
+    public function executeReadMatchDetails(int $matchId): ?array
+    {
+        return $this->getConfirmedMatchDetails($matchId);
+    }
+    
+    /**
+     * 执行搜索确认匹配操作，对应SearchConfirmedMatchesController
+     * @param int $cleanerId
+     * @param array $f
+     * @return array
+     */
+    public function executeSearchConfirmedMatches(int $cleanerId, array $f): array
+    {
+        return $this->searchConfirmedMatches($cleanerId, $f);
+    }
+    
+    /**
+     * 执行搜索服务使用历史操作，对应SearchServiceUsageHistoryController
+     * @param int $homeownerId
+     * @param array $f
+     * @return array
+     */
+    public function executeSearchUsageHistory(int $homeownerId, array $f): array
+    {
+        return $this->searchUsageHistory($homeownerId, $f);
+    }
+    
+    /**
+     * 执行查看服务使用详情操作，对应ViewServiceUsageDetailsController
+     * @param int $historyId
+     * @return array|null
+     */
+    public function executeGetUsageDetails(int $historyId): ?array
+    {
+        return $this->getUsageDetails($historyId);
+    }
+    
+    /**
+     * 执行查看服务浏览量操作，对应ViewServiceProfileViewsController
+     * @param int $cleanerId
+     * @return int
+     */
+    public function executeGetViewCount(int $cleanerId): int
+    {
+        return $this->getViewCount($cleanerId);
+    }
+    
+    /**
+     * 执行查看服务收藏数操作，对应ViewServiceShortlistCountController
+     * @param int $cleanerId
+     * @return int
+     */
+    public function executeGetShortlistCount(int $cleanerId): int
+    {
+        return $this->getShortlistCount($cleanerId);
     }
 
     /**

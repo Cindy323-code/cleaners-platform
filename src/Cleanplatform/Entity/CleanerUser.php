@@ -144,4 +144,57 @@ class CleanerUser extends User {
         mysqli_stmt_close($stmt);
         return $res;
     }
+
+    /**
+     * 执行查看服务操作，对应ViewCleaningServicesController
+     * @param int $cleanerId
+     * @return array
+     */
+    public function execute(int $cleanerId): array
+    {
+        return $this->viewServices($cleanerId);
+    }
+    
+    /**
+     * 执行创建服务操作，对应CreateCleaningServiceController
+     * @param array $data
+     * @return bool
+     */
+    public function executeCreate(array $data): bool
+    {
+        return $this->createService($data);
+    }
+    
+    /**
+     * 执行更新服务操作，对应UpdateCleaningServiceController
+     * @param int $id
+     * @param array $fields
+     * @return bool
+     */
+    public function executeUpdate(int $id, array $fields): bool
+    {
+        return $this->updateService($id, $fields);
+    }
+    
+    /**
+     * 执行删除服务操作，对应DeleteCleaningServiceController
+     * @param int $id
+     * @param int $cleanerId
+     * @return bool
+     */
+    public function executeDelete(int $id, int $cleanerId): bool
+    {
+        return $this->deleteService($id, $cleanerId);
+    }
+    
+    /**
+     * 执行搜索服务操作，对应SearchCleaningServicesController
+     * @param int $cleanerId
+     * @param string $keyword
+     * @return array
+     */
+    public function executeSearch(int $cleanerId, string $keyword): array
+    {
+        return $this->searchServices($cleanerId, $keyword);
+    }
 }
