@@ -82,12 +82,32 @@ $success = isset($_GET['success']) ? (bool)$_GET['success'] : false;
                         </div>
                         <div class="shortlist-content">
                             <p class="service-price">$<?= htmlspecialchars($item['price']) ?></p>
+                            <p class="service-id">Service ID: <?= htmlspecialchars($item['service_id']) ?></p>
+                            <p class="cleaner-id">Cleaner ID: <?= htmlspecialchars($item['cleaner_id']) ?></p>
+                            <?php
+                            // 查询service description using service_id
+                            $serviceDescOutput = '';
+                            if (!empty($item['service_id'])) {
+                                $db = \Config\Database::getConnection();
+                                $stmt_desc = mysqli_prepare($db, 'SELECT description FROM cleaner_services WHERE id = ?');
+                                mysqli_stmt_bind_param($stmt_desc, 'i', $item['service_id']);
+                                mysqli_stmt_execute($stmt_desc);
+                                mysqli_stmt_bind_result($stmt_desc, $desc_val);
+                                if (mysqli_stmt_fetch($stmt_desc)) {
+                                    $serviceDescOutput = $desc_val;
+                                }
+                                mysqli_stmt_close($stmt_desc);
+                            }
+                            if (!empty($serviceDescOutput)) {
+                                echo '<div class="service-description">Description: ' . htmlspecialchars($serviceDescOutput) . '</div>';
+                            }
+                            ?>
                             <div class="shortlist-actions">
                                 <form action="remove_from_shortlist.php" method="post" onsubmit="return confirm('Are you sure you want to remove this service from your shortlist?');">
-                                    <input type="hidden" name="shortlist_id" value="<?= $item['id'] ?>">
+                                    <input type="hidden" name="shortlist_id" value="<?= $item['shortlist_id'] ?>">
                                     <button type="submit" class="btn btn-small btn-danger">Remove</button>
                                 </form>
-                                <a href="/Cleanplatform/boundary/homeowner/search_available_cleaners.php" class="btn btn-small">View Details</a>
+                                <a href="/Cleanplatform/boundary/homeowner/view_cleaner_profile.php?id=<?= htmlspecialchars($item['cleaner_id']) ?>" class="btn btn-small">View Details</a>
                             </div>
                         </div>
                     </div>

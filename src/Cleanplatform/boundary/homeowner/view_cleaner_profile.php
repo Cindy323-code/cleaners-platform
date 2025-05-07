@@ -101,11 +101,6 @@ if ($cleanerId) {
                 <h4>Contact</h4>
                 <p>Email: <?= htmlspecialchars($cleaner['email']) ?></p>
             <?php endif; ?>
-
-            <?php if (!empty($cleaner['rating'])): ?>
-                <h4>Rating</h4>
-                <p><?= htmlspecialchars($cleaner['rating']) ?> / 5</p>
-            <?php endif; ?>
         </div>
     </div>
 </div>

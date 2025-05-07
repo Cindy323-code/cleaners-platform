@@ -79,6 +79,10 @@ $results = $controller->execute($criteria);
                                 <h4>Service: <?= htmlspecialchars($cleaner['sname']) ?></h4>
                                 <p class="service-type">Type: <?= htmlspecialchars($cleaner['stype'] ?? 'Not specified') ?></p>
                                 <p class="service-price">Price: $<?= htmlspecialchars($cleaner['price'] ?? '0') ?></p>
+                                <p class="service-id">Service ID: <?= htmlspecialchars($cleaner['service_id'] ?? '') ?></p>
+                                <?php if (!empty($cleaner['description'])): ?>
+                                    <div class="service-description">Description: <?= htmlspecialchars($cleaner['description']) ?></div>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>

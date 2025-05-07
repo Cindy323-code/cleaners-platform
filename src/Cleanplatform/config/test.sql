@@ -26,7 +26,6 @@ CREATE TABLE cleaners (
     password_hash VARCHAR(255) NOT NULL,
     email         VARCHAR(100),
     role          VARCHAR(50) DEFAULT 'cleaner',
-    rating        DECIMAL(3,2) DEFAULT 0,
     status        ENUM('active','suspended') DEFAULT 'active',
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

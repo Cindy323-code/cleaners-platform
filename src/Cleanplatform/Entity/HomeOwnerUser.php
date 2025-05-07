@@ -58,7 +58,7 @@ class HomeOwnerUser extends User {
     /** 搜索可用清洁工 */
     public function searchAvailableCleaners(array $criteria): array {
         // 准备SQL查询
-        $sql = 'SELECT c.id, c.username, s.id as service_id, s.name as sname, s.type as stype, s.price, p.full_name as full, p.bio
+        $sql = 'SELECT c.id, c.username, s.id as service_id, s.name as sname, s.type as stype, s.price, s.description, p.full_name as full, p.bio
                 FROM cleaners c
                 JOIN cleaner_services s ON c.id = s.cleaner_id
                 LEFT JOIN user_profiles p ON c.id = p.user_id AND p.user_type = "cleaner"
@@ -81,7 +81,7 @@ class HomeOwnerUser extends User {
         }
 
         // 添加排序
-        $sql .= ' ORDER BY c.rating DESC, s.price ASC';
+        $sql .= ' ORDER BY s.price ASC';
 
         // 准备和执行查询
         $stmt = mysqli_prepare($this->conn, $sql);
@@ -101,6 +101,7 @@ class HomeOwnerUser extends User {
                 'sname' => $row['sname'],
                 'stype' => $row['stype'],
                 'price' => $row['price'],
+                'description' => $row['description'],
                 'full' => $row['full'],
                 'bio' => $row['bio']
             ];
@@ -112,7 +113,7 @@ class HomeOwnerUser extends User {
     /** 查看清洁工详情 */
     public function viewCleanerProfile(int $cleanerId): ?array {
         // 查询 cleaners 表基本信息及关联的 user_profiles 表资料
-        $sql = 'SELECT c.id, c.username, c.rating, c.status, c.email,
+        $sql = 'SELECT c.id, c.username, c.status, c.email,
                 p.full_name, p.avatar_url, p.bio, p.availability, p.status as profile_status
                 FROM cleaners c
                 LEFT JOIN user_profiles p ON c.id = p.user_id AND p.user_type = "cleaner"
@@ -276,17 +277,17 @@ class HomeOwnerUser extends User {
 
     /** 查看我的收藏 */
     public function viewShortlist(int $homeownerId): array {
-        $sql = 'SELECT s.id,cs.name,cs.type,cs.price'
+        $sql = 'SELECT s.id as shortlist_id, cs.id as service_id, cs.name, cs.type, cs.price, cs.cleaner_id'
              . ' FROM shortlists s'
              . ' JOIN cleaner_services cs ON s.service_id = cs.id'
              . ' WHERE s.homeowner_id = ?';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'i', $homeownerId);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt,$id,$name,$type,$price);
+        mysqli_stmt_bind_result($stmt, $shortlist_id, $service_id, $name, $type, $price, $cleaner_id);
         $res = [];
         while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('id','name','type','price');
+            $res[] = compact('shortlist_id', 'service_id', 'name', 'type', 'price', 'cleaner_id');
         }
         mysqli_stmt_close($stmt);
         return $res;
@@ -295,17 +296,17 @@ class HomeOwnerUser extends User {
     /** 搜索收藏 */
     public function searchShortlist(int $homeownerId, string $keyword): array {
         $like = "%$keyword%";
-        $sql = 'SELECT s.id,cs.name,cs.type,cs.price'
+        $sql = 'SELECT s.id as shortlist_id, cs.id as service_id, cs.name, cs.type, cs.price, cs.cleaner_id'
              . ' FROM shortlists s'
              . ' JOIN cleaner_services cs ON s.service_id = cs.id'
              . ' WHERE s.homeowner_id = ? AND cs.name LIKE ?';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'is', $homeownerId, $like);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt,$id,$name,$type,$price);
+        mysqli_stmt_bind_result($stmt, $shortlist_id, $service_id, $name, $type, $price, $cleaner_id);
         $res = [];
         while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('id','name','type','price');
+            $res[] = compact('shortlist_id', 'service_id', 'name', 'type', 'price', 'cleaner_id');
         }
         mysqli_stmt_close($stmt);
         return $res;
