@@ -41,28 +41,6 @@
    - 打开 `C:\xampp\htdocs\Cleanplatform\config\Database.php`
    - 根据需要修改数据库连接信息（默认配置适用于标准XAMPP安装）
 
-### 2. (可选) 部署前端（Vite登录模板）
-
-1. 进入前端项目目录：
-   ```
-   cd src/login-bce-template/login-bce-vite-project
-   ```
-
-2. 安装依赖：
-   ```
-   npm install
-   ```
-
-3. 启动开发服务器：
-   ```
-   npm run dev
-   ```
-
-4. 构建生产版本：
-   ```
-   npm run build
-   ```
-
 ## 使用指南
 
 ### 访问系统
