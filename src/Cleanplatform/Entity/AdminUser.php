@@ -108,28 +108,133 @@ class AdminUser extends User {
 
     /** 更新用户信息 */
     public function updateUser(string $username, array $fields): bool {
+        // First determine which table contains this user
+        $userTable = null;
+        $userData = null;
+        
+        // Check admin_users table
+        $adminSql = 'SELECT id, role, status FROM admin_users WHERE username = ? LIMIT 1';
+        $adminStmt = mysqli_prepare($this->conn, $adminSql);
+        mysqli_stmt_bind_param($adminStmt, 's', $username);
+        mysqli_stmt_execute($adminStmt);
+        mysqli_stmt_bind_result($adminStmt, $id, $role, $status);
+        if (mysqli_stmt_fetch($adminStmt)) {
+            $userTable = 'admin_users';
+            $userData = ['id' => $id, 'role' => $role, 'status' => $status];
+        }
+        mysqli_stmt_close($adminStmt);
+        
+        // Check cleaners table if not found
+        if (!$userTable) {
+            $cleanerSql = 'SELECT id, role, status FROM cleaners WHERE username = ? LIMIT 1';
+            $cleanerStmt = mysqli_prepare($this->conn, $cleanerSql);
+            mysqli_stmt_bind_param($cleanerStmt, 's', $username);
+            mysqli_stmt_execute($cleanerStmt);
+            mysqli_stmt_bind_result($cleanerStmt, $id, $role, $status);
+            if (mysqli_stmt_fetch($cleanerStmt)) {
+                $userTable = 'cleaners';
+                $userData = ['id' => $id, 'role' => $role, 'status' => $status];
+            }
+            mysqli_stmt_close($cleanerStmt);
+        }
+        
+        // Check homeowners table if not found
+        if (!$userTable) {
+            $homeownerSql = 'SELECT id, role, status FROM homeowners WHERE username = ? LIMIT 1';
+            $homeownerStmt = mysqli_prepare($this->conn, $homeownerSql);
+            mysqli_stmt_bind_param($homeownerStmt, 's', $username);
+            mysqli_stmt_execute($homeownerStmt);
+            mysqli_stmt_bind_result($homeownerStmt, $id, $role, $status);
+            if (mysqli_stmt_fetch($homeownerStmt)) {
+                $userTable = 'homeowners';
+                $userData = ['id' => $id, 'role' => $role, 'status' => $status];
+            }
+            mysqli_stmt_close($homeownerStmt);
+        }
+        
+        // User not found in any table
+        if (!$userTable) {
+            return false;
+        }
+        
+        // If role is not in the fields being updated, preserve it
+        if (!isset($fields['role']) && $userData) {
+            $fields['role'] = $userData['role'];
+        }
+        
+        // Perform the update on the correct table
         $sets = [];
         $types = '';
-        $vals  = [];
+        $vals = [];
         foreach ($fields as $col => $val) {
             $sets[] = "`$col` = ?";
             $types .= 's';
-            $vals[]  = $val;
+            $vals[] = $val;
         }
-        $sql = 'UPDATE ' . static::$tableName
-             . ' SET ' . implode(',', $sets)
-             . ' WHERE username = ?';
+        
+        $sql = "UPDATE $userTable SET " . implode(',', $sets) . ' WHERE username = ?';
         $types .= 's';
         $vals[] = $username;
+        
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, $types, ...$vals);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
+        
         return $ok;
     }
 
     /** 暂停（挂起）用户 */
     public function suspendUser(string $username): bool {
+        // First check if the user exists and get their role
+        $currentUser = $this->viewUser($username);
+        
+        if (!$currentUser) {
+            // User not found in admin_users, try other tables
+            // Try cleaners table
+            $cleanerSql = 'SELECT role FROM cleaners WHERE username = ? LIMIT 1';
+            $cleanerStmt = mysqli_prepare($this->conn, $cleanerSql);
+            mysqli_stmt_bind_param($cleanerStmt, 's', $username);
+            mysqli_stmt_execute($cleanerStmt);
+            mysqli_stmt_bind_result($cleanerStmt, $role);
+            $found = mysqli_stmt_fetch($cleanerStmt);
+            mysqli_stmt_close($cleanerStmt);
+            
+            if ($found) {
+                // Found in cleaners table, update status
+                $sql = 'UPDATE cleaners SET status = ? WHERE username = ?';
+                $stmt = mysqli_prepare($this->conn, $sql);
+                $status = 'suspended';
+                mysqli_stmt_bind_param($stmt, 'ss', $status, $username);
+                $ok = mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+                return $ok;
+            }
+            
+            // Try homeowners table
+            $homeownerSql = 'SELECT role FROM homeowners WHERE username = ? LIMIT 1';
+            $homeownerStmt = mysqli_prepare($this->conn, $homeownerSql);
+            mysqli_stmt_bind_param($homeownerStmt, 's', $username);
+            mysqli_stmt_execute($homeownerStmt);
+            mysqli_stmt_bind_result($homeownerStmt, $role);
+            $found = mysqli_stmt_fetch($homeownerStmt);
+            mysqli_stmt_close($homeownerStmt);
+            
+            if ($found) {
+                // Found in homeowners table, update status
+                $sql = 'UPDATE homeowners SET status = ? WHERE username = ?';
+                $stmt = mysqli_prepare($this->conn, $sql);
+                $status = 'suspended';
+                mysqli_stmt_bind_param($stmt, 'ss', $status, $username);
+                $ok = mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+                return $ok;
+            }
+            
+            return false; // User not found in any table
+        }
+        
+        // User found in admin_users table, use updateUser method
         return $this->updateUser($username, ['status' => 'suspended']);
     }
 
