@@ -8,6 +8,11 @@ class UserProfile
 {
     private mysqli $conn;
 
+    // Static factory method to get UserProfile instance
+    public static function getInstance(): UserProfile {
+        return new self();
+    }
+
     public function __construct()
     {
         $this->conn = Database::getConnection();

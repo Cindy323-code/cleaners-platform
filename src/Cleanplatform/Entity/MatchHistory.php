@@ -8,6 +8,11 @@ class MatchHistory
 {
     private mysqli $conn;
 
+    // Static factory method to get MatchHistory instance
+    public static function getInstance(): MatchHistory {
+        return new self();
+    }
+
     public function __construct()
     {
         $this->conn = Database::getConnection();

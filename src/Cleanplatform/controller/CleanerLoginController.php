@@ -2,12 +2,13 @@
 namespace Controller;
 
 use Entity\CleanerUser;
+use Entity\User;
 
 class CleanerLoginController {
     private CleanerUser $entity;
 
     public function __construct() {
-        $this->entity = new CleanerUser();
+        $this->entity = User::getInstance(['role' => 'cleaner']);
     }
 
     public function execute(string $username, string $password) : ?array {

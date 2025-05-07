@@ -7,7 +7,7 @@ class CreateUserProfileController {
     private UserProfile $entity;
 
     public function __construct() {
-        $this->entity = new UserProfile();
+        $this->entity = UserProfile::getInstance();
     }
 
     public function execute(int $userId, array $data) : bool {

@@ -2,12 +2,13 @@
 namespace Controller;
 
 use Entity\AdminUser;
+use Entity\User;
 
 class SuspendUserAccountController {
     private AdminUser $entity;
 
     public function __construct() {
-        $this->entity = new AdminUser();
+        $this->entity = User::getInstance(['role' => 'admin']);
     }
 
     public function execute(string $username) : bool {
