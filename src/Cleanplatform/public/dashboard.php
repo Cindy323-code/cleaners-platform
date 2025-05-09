@@ -175,9 +175,6 @@ $userId = $_SESSION['user']['id'];
                 <p>No services available at the moment.</p>
                 <?php endif; ?>
             </div>
-            <div class="module-footer">
-                <a href="/Cleanplatform/boundary/homeowner/search_available_cleaners.php" class="btn btn-small">Browse All Services</a>
-            </div>
         </div>
 
         <!-- Find Cleaners Module -->
