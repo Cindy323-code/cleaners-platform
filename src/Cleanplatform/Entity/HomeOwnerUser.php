@@ -102,7 +102,7 @@ class HomeOwnerUser extends User {
     public function login(string $username, string $password): ?array
     {
         $sql = 'SELECT id, username, password_hash, role, status
-                FROM ' . static::$tableName . ' WHERE username = ? AND role = "homeowner" LIMIT 1';
+                FROM ' . static::$tableName . ' WHERE username = ? LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 's', $username);
         mysqli_stmt_execute($stmt);
@@ -115,11 +115,11 @@ class HomeOwnerUser extends User {
                      || $password === $hash
                      || (strlen($hash) === 32 && md5($password) === $hash);
 
-            if ($verified && $status === 'active') {
+            if ($verified && $status === 'active' && strtolower($role) === 'homeowner') {
                 $result = [
                     'id'       => $id,
                     'username' => $user,
-                    'role'     => $role,
+                    'role'     => strtolower($role),
                     'status'   => $status
                 ];
             }

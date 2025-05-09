@@ -27,7 +27,7 @@ if ($cleanerId) {
         $db = \Config\Database::getConnection();
         $sql = 'SELECT id, name, type, price, description
                 FROM cleaner_services
-                WHERE cleaner_id = ?';
+                WHERE user_id = ?';
         $stmt = mysqli_prepare($db, $sql);
         mysqli_stmt_bind_param($stmt, 'i', $cleanerId);
         mysqli_stmt_execute($stmt);

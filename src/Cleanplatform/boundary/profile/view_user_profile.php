@@ -88,8 +88,8 @@ $profile = $controller->execute($userId, $userRole);
     <div class="card-title">Cleaner Services</div>
     <p>Manage your cleaning services and view statistics:</p>
     <div class="button-group">
-        <a href="../service/view_cleaning_services.php" class="btn">View My Services</a>
-        <a href="../service/create_cleaning_service.php" class="btn">Add New Service</a>
+        <a href="../service/manage_cleaning_services.php?tab=view" class="btn">View My Services</a>
+        <a href="../service/manage_cleaning_services.php?tab=create" class="btn">Add New Service</a>
         <a href="../history/view_service_profile_views.php" class="btn">View Profile Statistics</a>
     </div>
 </div>

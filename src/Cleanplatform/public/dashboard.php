@@ -146,9 +146,10 @@ $userId = $_SESSION['user']['id'];
                 // Get latest services
                 require_once __DIR__ . '/../config/Database.php';
                 $db = \Config\Database::getConnection();
-                $sql = 'SELECT cs.id, cs.name, cs.type, cs.price, cs.cleaner_id, c.username AS cleaner_name
+                $sql = 'SELECT cs.id, cs.name, cs.type, cs.price, cs.user_id, u.username AS cleaner_name
                        FROM cleaner_services cs
-                       JOIN cleaners c ON cs.cleaner_id = c.id
+                       JOIN users u ON cs.user_id = u.id
+                       WHERE u.role = "cleaner"
                        ORDER BY cs.created_at DESC LIMIT 5';
                 $result = mysqli_query($db, $sql);
                 if ($result && mysqli_num_rows($result) > 0):
@@ -164,7 +165,7 @@ $userId = $_SESSION['user']['id'];
                                 <p class="service-id" style="background-color: #f0f8ff; padding: 4px; border-radius: 3px; font-weight: bold;">Service ID: <?= htmlspecialchars($service['id']) ?></p>
                             </div>
                             <div class="service-actions">
-                                <a href="/Cleanplatform/boundary/homeowner/view_cleaner_profile.php?id=<?= htmlspecialchars($service['cleaner_id']) ?>" class="btn btn-small" style="background-color: #007bff; color: white;">View Cleaner</a>
+                                <a href="/Cleanplatform/boundary/homeowner/view_cleaner_profile.php?id=<?= htmlspecialchars($service['user_id']) ?>" class="btn btn-small" style="background-color: #007bff; color: white;">View Cleaner</a>
                                 <form action="/Cleanplatform/boundary/shortlist/add_to_shortlist.php" method="post" style="display: inline;">
                                     <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
                                     <button type="submit" class="btn btn-small">Add to Shortlist</button>

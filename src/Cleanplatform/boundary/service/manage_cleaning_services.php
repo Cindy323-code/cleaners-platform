@@ -7,6 +7,7 @@ use Controller\CreateCleaningServiceController;
 use Controller\UpdateCleaningServiceController;
 use Controller\DeleteCleaningServiceController;
 use Controller\SearchCleaningServicesController;
+use Controller\ViewServiceCategoriesController;
 
 require_once __DIR__ . '/../partials/header.php';
 require_once __DIR__ . '/../../config/Database.php';
@@ -16,6 +17,8 @@ require_once __DIR__ . '/../../controller/CreateCleaningServiceController.php';
 require_once __DIR__ . '/../../controller/UpdateCleaningServiceController.php';
 require_once __DIR__ . '/../../controller/DeleteCleaningServiceController.php';
 require_once __DIR__ . '/../../controller/SearchCleaningServicesController.php';
+require_once __DIR__ . '/../../controller/ViewServiceCategoriesController.php';
+require_once __DIR__ . '/../../Entity/PlatformManager.php';
 
 // Check if user is logged in as cleaner
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'cleaner') {
@@ -38,12 +41,16 @@ $services = [];
 $serviceController = new ViewCleaningServicesController();
 $servicesList = $serviceController->execute($cleanerId);
 
+// Get all service categories created by managers
+$categoryController = new ViewServiceCategoriesController();
+$categoriesList = $categoryController->execute();
+
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Create service
     if (isset($_POST['action']) && $_POST['action'] === 'create') {
         $data = [
-            'cleaner_id'  => $cleanerId,
+            'user_id'     => $cleanerId,
             'name'        => trim($_POST['name']),
             'type'        => trim($_POST['type']),
             'price'       => floatval($_POST['price']),
@@ -320,7 +327,14 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
 
             <div class="form-group">
                 <label for="type">Service Type: <span class="required">*</span></label>
-                <input type="text" id="type" name="type" placeholder="e.g., Home Cleaning" required>
+                <select id="type" name="type" required>
+                    <option value="">-- Select a Service Category --</option>
+                    <?php foreach ($categoriesList as $category): ?>
+                        <option value="<?= htmlspecialchars($category['name']) ?>">
+                            <?= htmlspecialchars($category['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
             <div class="form-group">
@@ -365,7 +379,14 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
 
                 <div class="form-group">
                     <label for="type">Service Type:</label>
-                    <input type="text" id="type" name="type" value="<?= htmlspecialchars($serviceToEdit['type']) ?>" placeholder="e.g., Home Cleaning">
+                    <select id="type" name="type">
+                        <option value="">-- Select a Service Category --</option>
+                        <?php foreach ($categoriesList as $category): ?>
+                            <option value="<?= htmlspecialchars($category['name']) ?>" <?= $serviceToEdit['type'] === $category['name'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($category['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -624,6 +645,32 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
 .service-selector {
     max-width: 600px;
     margin: 0 auto;
+}
+
+/* Form Styles */
+.service-form select,
+.service-selector select {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #333;
+    background-color: white;
+    transition: border-color 0.2s;
+}
+
+.service-form select:focus,
+.service-selector select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.service-form select:hover,
+.service-selector select:hover {
+    border-color: #aaa;
 }
 </style>
 

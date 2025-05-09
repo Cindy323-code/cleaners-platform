@@ -12,6 +12,6 @@ class CreateCleaningServiceController {
     }
 
     public function execute(array $data) : bool {
-        return $this->entity->executeCreate($data);
+        return $this->entity->executeCreateService($data);
     }
 }

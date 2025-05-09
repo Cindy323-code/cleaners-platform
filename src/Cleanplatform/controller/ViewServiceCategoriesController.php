@@ -4,6 +4,9 @@ namespace Controller;
 use Entity\PlatformManager;
 use Entity\User;
 
+require_once __DIR__ . '/../Entity/User.php';
+require_once __DIR__ . '/../Entity/PlatformManager.php';
+
 class ViewServiceCategoriesController {
     private PlatformManager $entity;
 

@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($serviceId) {
             // 检查服务是否已经在收藏夹中
             $db = \Config\Database::getConnection();
-            $checkSql = "SELECT * FROM shortlists WHERE homeowner_id = ? AND service_id = ?";
+            $checkSql = "SELECT * FROM shortlists WHERE user_id = ? AND service_id = ?";
             $checkStmt = mysqli_prepare($db, $checkSql);
             mysqli_stmt_bind_param($checkStmt, 'ii', $homeId, $serviceId);
             mysqli_stmt_execute($checkStmt);
@@ -66,10 +66,10 @@ $serviceInfo = null;
 if (isset($_GET['service_id']) && intval($_GET['service_id']) > 0) {
     $serviceId = intval($_GET['service_id']);
     $db = \Config\Database::getConnection();
-    $sql = "SELECT cs.id, cs.name, cs.type, cs.price, c.username AS cleaner_name, c.id AS cleaner_id
+    $sql = "SELECT cs.id, cs.name, cs.type, cs.price, u.username AS cleaner_name, u.id AS cleaner_id
             FROM cleaner_services cs
-            JOIN cleaners c ON cs.cleaner_id = c.id
-            WHERE cs.id = ?";
+            JOIN users u ON cs.user_id = u.id
+            WHERE cs.id = ? AND u.role = 'cleaner'";
     $stmt = mysqli_prepare($db, $sql);
     mysqli_stmt_bind_param($stmt, 'i', $serviceId);
     mysqli_stmt_execute($stmt);
