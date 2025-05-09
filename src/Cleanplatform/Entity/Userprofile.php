@@ -21,42 +21,40 @@ class UserProfile
     /**
      * 统一执行方法，根据参数数量和类型分发到不同操作
      * @param int    $userId
-     * @param string $userType cleaner|homeowner
      * @param array|null  $data  可选，如果提供则创建或更新资料
      * @return bool|array|null
      */
-    public function execute(int $userId, string $userType, array $data = null)
+    public function execute(int $userId, array $data = null)
     {
         // 如果没有提供数据，执行查看操作
         if ($data === null) {
-            return $this->viewProfile($userId, $userType);
+            return $this->viewProfile($userId);
         }
         
         // 检查个人档案是否已存在
-        $profile = $this->viewProfile($userId, $userType);
+        $profile = $this->viewProfile($userId);
         if ($profile === null) {
             // 如果不存在，执行创建操作
-            return $this->createProfile($userId, $userType, $data);
+            return $this->createProfile($userId, $data);
         } else {
             // 如果存在，执行更新操作
-            return $this->updateProfile($userId, $userType, $data);
+            return $this->updateProfile($userId, $data);
         }
     }
 
     /**
      * 执行停用档案操作
      * @param int    $userId
-     * @param string $userType cleaner|homeowner
      * @return bool
      */
-    public function executeDeactivate(int $userId, string $userType): bool
+    public function executeDeactivate(int $userId): bool
     {
-        return $this->deactivateProfile($userId, $userType);
+        return $this->deactivateProfile($userId);
     }
 
     /**
      * 执行搜索档案操作
-     * @param array $criteria ['full_name','user_type']
+     * @param array $criteria ['full_name','role']
      * @return array
      */
     public function executeSearch(array $criteria): array
@@ -67,21 +65,19 @@ class UserProfile
     /**
      * 创建个人档案
      * @param int    $userId
-     * @param string $userType cleaner|homeowner
      * @param array  $data     ['full_name','avatar_url','bio','availability']
      * @return bool
      */
-    public function createProfile(int $userId, string $userType, array $data): bool
+    public function createProfile(int $userId, array $data): bool
     {
         $sql = 'INSERT INTO user_profiles
-                (user_id, user_type, full_name, avatar_url, bio, availability, status)
-                VALUES (?, ?, ?, ?, ?, ?, "active")';
+                (user_id, full_name, avatar_url, bio, availability, status)
+                VALUES (?, ?, ?, ?, ?, "active")';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param(
             $stmt,
-            'isssss',
+            'issss',
             $userId,
-            $userType,
             $data['full_name'],
             $data['avatar_url'],
             $data['bio'],
@@ -95,16 +91,15 @@ class UserProfile
     /**
      * 查看个人档案
      * @param int    $userId
-     * @param string $userType
      * @return array|null
      */
-    public function viewProfile(int $userId, string $userType): ?array
+    public function viewProfile(int $userId): ?array
     {
         $sql = 'SELECT full_name, avatar_url, bio, availability, status
                 FROM user_profiles
-                WHERE user_id = ? AND user_type = ? LIMIT 1';
+                WHERE user_id = ? LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'is', $userId, $userType);
+        mysqli_stmt_bind_param($stmt, 'i', $userId);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result(
             $stmt,
@@ -131,11 +126,10 @@ class UserProfile
     /**
      * 更新个人档案
      * @param int    $userId
-     * @param string $userType
      * @param array  $data      任意包含 full_name/avatar_url/bio/availability
      * @return bool
      */
-    public function updateProfile(int $userId, string $userType, array $data): bool
+    public function updateProfile(int $userId, array $data): bool
     {
         $fields = [];
         $types  = '';
@@ -151,12 +145,11 @@ class UserProfile
             return false;
         }
         $values[] = $userId;
-        $values[] = $userType;
         $sql = 'UPDATE user_profiles
                 SET ' . implode(', ', $fields) . '
-                WHERE user_id = ? AND user_type = ?';
+                WHERE user_id = ?';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, $types . 'is', ...$values);
+        mysqli_stmt_bind_param($stmt, $types . 'i', ...$values);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         return $ok;
@@ -165,16 +158,15 @@ class UserProfile
     /**
      * 暂停/停用个人档案
      * @param int    $userId
-     * @param string $userType
      * @return bool
      */
-    public function deactivateProfile(int $userId, string $userType): bool
+    public function deactivateProfile(int $userId): bool
     {
         $sql = 'UPDATE user_profiles
                 SET status = "inactive"
-                WHERE user_id = ? AND user_type = ?';
+                WHERE user_id = ?';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'is', $userId, $userType);
+        mysqli_stmt_bind_param($stmt, 'i', $userId);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         return $ok;
@@ -182,44 +174,68 @@ class UserProfile
 
     /**
      * 搜索其他用户档案
-     * @param array $criteria ['full_name','user_type']
+     * @param array $criteria ['full_name','role']
      * @return array
      */
     public function searchProfiles(array $criteria): array
     {
-        $sql = 'SELECT user_id, user_type, full_name, avatar_url, bio, availability
-                FROM user_profiles WHERE 1=1';
+        $sql = 'SELECT p.user_id, u.role, p.full_name, p.avatar_url, p.bio, p.availability
+                FROM user_profiles p
+                JOIN users u ON p.user_id = u.id
+                WHERE 1=1';
         $types  = '';
         $values = [];
         if (!empty($criteria['full_name'])) {
-            $sql   .= ' AND full_name LIKE ?';
+            $sql   .= ' AND p.full_name LIKE ?';
             $types .= 's';
             $values[] = '%' . $criteria['full_name'] . '%';
         }
-        if (!empty($criteria['user_type'])) {
-            $sql   .= ' AND user_type = ?';
+        if (!empty($criteria['role'])) {
+            $sql   .= ' AND u.role = ?';
             $types .= 's';
-            $values[] = $criteria['user_type'];
+            $values[] = $criteria['role'];
         }
-        $stmt = mysqli_prepare($this->conn, $sql);
-        if ($values) {
+        if (!empty($criteria['status'])) {
+            $sql   .= ' AND p.status = ?';
+            $types .= 's';
+            $values[] = $criteria['status'];
+        }
+        if (!empty($types)) {
+            $stmt = mysqli_prepare($this->conn, $sql);
             mysqli_stmt_bind_param($stmt, $types, ...$values);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $profiles = [];
+            while ($row = mysqli_fetch_assoc($result)) {
+                $profiles[] = $row;
+            }
+            mysqli_stmt_close($stmt);
+            return $profiles;
+        } else {
+            $result = mysqli_query($this->conn, $sql);
+            $profiles = [];
+            while ($row = mysqli_fetch_assoc($result)) {
+                $profiles[] = $row;
+            }
+            mysqli_free_result($result);
+            return $profiles;
         }
+    }
+
+    /**
+     * 检查用户是否已有个人档案
+     * @param int $userId
+     * @return bool
+     */
+    public function hasProfile(int $userId): bool
+    {
+        $sql = 'SELECT 1 FROM user_profiles WHERE user_id = ? LIMIT 1';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $userId);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result(
-            $stmt,
-            $userId,
-            $userType,
-            $fullName,
-            $avatarUrl,
-            $bio,
-            $availability
-        );
-        $res = [];
-        while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('userId','userType','fullName','avatarUrl','bio','availability');
-        }
+        mysqli_stmt_store_result($stmt);
+        $exists = mysqli_stmt_num_rows($stmt) > 0;
         mysqli_stmt_close($stmt);
-        return $res;
+        return $exists;
     }
 }

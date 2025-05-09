@@ -7,6 +7,7 @@ use Config\Database;
 abstract class User
 {
     protected $conn;
+    protected static string $tableName = 'users';
 
     public function __construct()
     {
@@ -57,7 +58,7 @@ abstract class User
     public function login(string $username, string $password): ?array
     {
         $sql = 'SELECT id, username, password_hash, role, status
-                FROM admin_users WHERE username = ? LIMIT 1';
+                FROM ' . static::$tableName . ' WHERE username = ? LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 's', $username);
         mysqli_stmt_execute($stmt);
@@ -75,7 +76,7 @@ abstract class User
                 $result = [
                     'id'       => $id,
                     'username' => $user,
-                    'role'     => $role,
+                    'role'     => strtolower($role),
                     'status'   => $status
                 ];
             }

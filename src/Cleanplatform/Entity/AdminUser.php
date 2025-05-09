@@ -4,7 +4,7 @@ namespace Entity;
 require_once __DIR__ . '/User.php'; 
 
 class AdminUser extends User {
-    protected static string $tableName = 'admin_users';
+    // 使用基类中已定义的$tableName = 'users'
 
     /**
      * 执行查看用户操作，对应ViewUserAccountController
@@ -96,11 +96,18 @@ class AdminUser extends User {
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result(
             $stmt,
-            $id, $user, $email, $role, $status, $createdAt
+            $id, $username, $email, $role, $status, $createdAt
         );
         if (mysqli_stmt_fetch($stmt)) {
             mysqli_stmt_close($stmt);
-            return compact('id','user','email','role','status','createdAt');
+            return [
+                'id' => $id,
+                'user' => $username,
+                'email' => $email,
+                'role' => $role,
+                'status' => $status,
+                'createdAt' => $createdAt
+            ];
         }
         mysqli_stmt_close($stmt);
         return null;
@@ -108,61 +115,24 @@ class AdminUser extends User {
 
     /** 更新用户信息 */
     public function updateUser(string $username, array $fields): bool {
-        // First determine which table contains this user
-        $userTable = null;
-        $userData = null;
+        // 使用统一的users表
+        $userTable = static::$tableName;
         
-        // Check admin_users table
-        $adminSql = 'SELECT id, role, status FROM admin_users WHERE username = ? LIMIT 1';
-        $adminStmt = mysqli_prepare($this->conn, $adminSql);
-        mysqli_stmt_bind_param($adminStmt, 's', $username);
-        mysqli_stmt_execute($adminStmt);
-        mysqli_stmt_bind_result($adminStmt, $id, $role, $status);
-        if (mysqli_stmt_fetch($adminStmt)) {
-            $userTable = 'admin_users';
-            $userData = ['id' => $id, 'role' => $role, 'status' => $status];
-        }
-        mysqli_stmt_close($adminStmt);
+        // 检查用户是否存在
+        $sql = 'SELECT id, role, status FROM ' . $userTable . ' WHERE username = ? LIMIT 1';
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 's', $username);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $id, $role, $status);
+        $userExists = mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
         
-        // Check cleaners table if not found
-        if (!$userTable) {
-            $cleanerSql = 'SELECT id, role, status FROM cleaners WHERE username = ? LIMIT 1';
-            $cleanerStmt = mysqli_prepare($this->conn, $cleanerSql);
-            mysqli_stmt_bind_param($cleanerStmt, 's', $username);
-            mysqli_stmt_execute($cleanerStmt);
-            mysqli_stmt_bind_result($cleanerStmt, $id, $role, $status);
-            if (mysqli_stmt_fetch($cleanerStmt)) {
-                $userTable = 'cleaners';
-                $userData = ['id' => $id, 'role' => $role, 'status' => $status];
-            }
-            mysqli_stmt_close($cleanerStmt);
-        }
-        
-        // Check homeowners table if not found
-        if (!$userTable) {
-            $homeownerSql = 'SELECT id, role, status FROM homeowners WHERE username = ? LIMIT 1';
-            $homeownerStmt = mysqli_prepare($this->conn, $homeownerSql);
-            mysqli_stmt_bind_param($homeownerStmt, 's', $username);
-            mysqli_stmt_execute($homeownerStmt);
-            mysqli_stmt_bind_result($homeownerStmt, $id, $role, $status);
-            if (mysqli_stmt_fetch($homeownerStmt)) {
-                $userTable = 'homeowners';
-                $userData = ['id' => $id, 'role' => $role, 'status' => $status];
-            }
-            mysqli_stmt_close($homeownerStmt);
-        }
-        
-        // User not found in any table
-        if (!$userTable) {
+        // 用户不存在
+        if (!$userExists) {
             return false;
         }
         
-        // If role is not in the fields being updated, preserve it
-        if (!isset($fields['role']) && $userData) {
-            $fields['role'] = $userData['role'];
-        }
-        
-        // Perform the update on the correct table
+        // 执行更新
         $sets = [];
         $types = '';
         $vals = [];
@@ -186,179 +156,93 @@ class AdminUser extends User {
 
     /** 暂停（挂起）用户 */
     public function suspendUser(string $username): bool {
-        // First check if the user exists and get their role
-        $currentUser = $this->viewUser($username);
-        
-        if (!$currentUser) {
-            // User not found in admin_users, try other tables
-            // Try cleaners table
-            $cleanerSql = 'SELECT role FROM cleaners WHERE username = ? LIMIT 1';
-            $cleanerStmt = mysqli_prepare($this->conn, $cleanerSql);
-            mysqli_stmt_bind_param($cleanerStmt, 's', $username);
-            mysqli_stmt_execute($cleanerStmt);
-            mysqli_stmt_bind_result($cleanerStmt, $role);
-            $found = mysqli_stmt_fetch($cleanerStmt);
-            mysqli_stmt_close($cleanerStmt);
-            
-            if ($found) {
-                // Found in cleaners table, update status
-                $sql = 'UPDATE cleaners SET status = ? WHERE username = ?';
-                $stmt = mysqli_prepare($this->conn, $sql);
-                $status = 'suspended';
-                mysqli_stmt_bind_param($stmt, 'ss', $status, $username);
-                $ok = mysqli_stmt_execute($stmt);
-                mysqli_stmt_close($stmt);
-                return $ok;
-            }
-            
-            // Try homeowners table
-            $homeownerSql = 'SELECT role FROM homeowners WHERE username = ? LIMIT 1';
-            $homeownerStmt = mysqli_prepare($this->conn, $homeownerSql);
-            mysqli_stmt_bind_param($homeownerStmt, 's', $username);
-            mysqli_stmt_execute($homeownerStmt);
-            mysqli_stmt_bind_result($homeownerStmt, $role);
-            $found = mysqli_stmt_fetch($homeownerStmt);
-            mysqli_stmt_close($homeownerStmt);
-            
-            if ($found) {
-                // Found in homeowners table, update status
-                $sql = 'UPDATE homeowners SET status = ? WHERE username = ?';
-                $stmt = mysqli_prepare($this->conn, $sql);
-                $status = 'suspended';
-                mysqli_stmt_bind_param($stmt, 'ss', $status, $username);
-                $ok = mysqli_stmt_execute($stmt);
-                mysqli_stmt_close($stmt);
-                return $ok;
-            }
-            
-            return false; // User not found in any table
-        }
-        
-        // User found in admin_users table, use updateUser method
-        return $this->updateUser($username, ['status' => 'suspended']);
+        $sql = "UPDATE " . static::$tableName . " SET status = 'suspended' WHERE username = ?";
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_bind_param($stmt, 's', $username);
+        $ok = mysqli_stmt_execute($stmt);
+        $affected = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok && $affected > 0;
     }
 
     /** 搜索用户 */
     public function searchUsers(string $keyword = '', string $role = '', string $status = ''): array {
         $results = [];
-        
-        // 从admin_users表中搜索
-        $this->searchFromTable('admin_users', $keyword, $role, $status, $results);
-        
-        // 从cleaners表中搜索
-        $this->searchFromTable('cleaners', $keyword, $role, $status, $results);
-        
-        // 从homeowners表中搜索
-        $this->searchFromTable('homeowners', $keyword, $role, $status, $results);
-        
-        // 按用户名排序
-        usort($results, function($a, $b) {
-            return strcmp($a['user'], $b['user']);
-        });
-        
+        $this->searchFromTable(static::$tableName, $keyword, $role, $status, $results);
         return $results;
     }
-    
-    /** 从指定表中搜索用户 */
+
     private function searchFromTable(string $tableName, string $keyword, string $role, string $status, array &$results): void {
-        // 构建基本SQL查询
-        $sql = "SELECT username, role, email, status FROM $tableName";
         $conditions = [];
         $params = [];
         $types = '';
         
-        // 添加关键字搜索条件
         if (!empty($keyword)) {
-            $like = "%$keyword%";
-            $conditions[] = '(username LIKE ? OR email LIKE ?)';
-            $params[] = $like;
-            $params[] = $like;
+            $likeKeyword = "%$keyword%";
+            $conditions[] = "(username LIKE ? OR email LIKE ?)";
+            $params[] = $likeKeyword;
+            $params[] = $likeKeyword;
             $types .= 'ss';
         }
         
-        // 添加角色筛选条件
         if (!empty($role)) {
-            $conditions[] = 'role = ?';
+            $conditions[] = "role = ?";
             $params[] = $role;
             $types .= 's';
         }
         
-        // 添加状态筛选条件
         if (!empty($status)) {
-            $conditions[] = 'status = ?';
+            $conditions[] = "status = ?";
             $params[] = $status;
             $types .= 's';
         }
         
-        // 组合WHERE子句
-        if (!empty($conditions)) {
-            $sql .= ' WHERE ' . implode(' AND ', $conditions);
-        }
+        $whereClause = !empty($conditions) ? " WHERE " . implode(' AND ', $conditions) : '';
         
+        $sql = "SELECT id, username, email, role, status, created_at FROM $tableName" . $whereClause . " ORDER BY created_at DESC";
         $stmt = mysqli_prepare($this->conn, $sql);
         
-        // 如果有参数，绑定它们
         if (!empty($params)) {
             mysqli_stmt_bind_param($stmt, $types, ...$params);
         }
         
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $user, $role, $email, $status);
+        mysqli_stmt_bind_result($stmt, $id, $username, $email, $role, $status, $createdAt);
         
         while (mysqli_stmt_fetch($stmt)) {
-            $results[] = compact('user', 'role', 'email', 'status');
+            $results[] = [
+                'id' => $id,
+                'user' => $username,
+                'email' => $email,
+                'role' => $role,
+                'status' => $status,
+                'createdAt' => $createdAt,
+                'table' => $tableName // 添加表名以便区分
+            ];
         }
         
         mysqli_stmt_close($stmt);
     }
-    
-    /** 获取所有用户 */
+
     public function getAllUsers(): array {
-        // 获取管理员用户
-        $adminSql = 'SELECT id, username, email, role, status, created_at FROM admin_users ORDER BY created_at DESC';
-        $adminStmt = mysqli_prepare($this->conn, $adminSql);
-        mysqli_stmt_execute($adminStmt);
-        mysqli_stmt_bind_result(
-            $adminStmt,
-            $id, $user, $email, $role, $status, $createdAt
-        );
+        $sql = "SELECT id, username, email, role, status, created_at FROM " . static::$tableName . " ORDER BY created_at DESC";
+        $stmt = mysqli_prepare($this->conn, $sql);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $id, $username, $email, $role, $status, $createdAt);
+        
         $results = [];
-        while (mysqli_stmt_fetch($adminStmt)) {
-            $results[] = compact('id', 'user', 'email', 'role', 'status', 'createdAt');
+        while (mysqli_stmt_fetch($stmt)) {
+            $results[] = [
+                'id' => $id,
+                'user' => $username,
+                'email' => $email,
+                'role' => $role,
+                'status' => $status,
+                'createdAt' => $createdAt
+            ];
         }
-        mysqli_stmt_close($adminStmt);
         
-        // 获取清洁工用户
-        $cleanerSql = 'SELECT id, username, email, role, status, created_at FROM cleaners ORDER BY created_at DESC';
-        $cleanerStmt = mysqli_prepare($this->conn, $cleanerSql);
-        mysqli_stmt_execute($cleanerStmt);
-        mysqli_stmt_bind_result(
-            $cleanerStmt,
-            $id, $user, $email, $role, $status, $createdAt
-        );
-        while (mysqli_stmt_fetch($cleanerStmt)) {
-            $results[] = compact('id', 'user', 'email', 'role', 'status', 'createdAt');
-        }
-        mysqli_stmt_close($cleanerStmt);
-        
-        // 获取房主用户
-        $homeownerSql = 'SELECT id, username, email, role, status, created_at FROM homeowners ORDER BY created_at DESC';
-        $homeownerStmt = mysqli_prepare($this->conn, $homeownerSql);
-        mysqli_stmt_execute($homeownerStmt);
-        mysqli_stmt_bind_result(
-            $homeownerStmt,
-            $id, $user, $email, $role, $status, $createdAt
-        );
-        while (mysqli_stmt_fetch($homeownerStmt)) {
-            $results[] = compact('id', 'user', 'email', 'role', 'status', 'createdAt');
-        }
-        mysqli_stmt_close($homeownerStmt);
-        
-        // 按创建时间排序
-        usort($results, function($a, $b) {
-            return strcmp($b['createdAt'], $a['createdAt']);
-        });
-        
+        mysqli_stmt_close($stmt);
         return $results;
     }
 }

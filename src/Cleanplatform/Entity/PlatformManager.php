@@ -4,7 +4,8 @@ namespace Entity;
 require_once __DIR__ . '/User.php'; 
 
 class PlatformManager extends User {
-    protected static string $tableName = 'platform_managers';
+    // Removed: protected static string $tableName = 'platform_managers';
+    // Now inherits $tableName = 'users' from User class
 
     /** 创建用户账户 */
     public function createUser(array $data): bool {
@@ -18,7 +19,7 @@ class PlatformManager extends User {
             $data['username'],
             $data['password_hash'], // Make sure this is pre-hashed
             $data['email'],
-            $data['role'], // Should be 'platform_manager' or similar
+            $data['role'], // Should be 'platform_manager' or 'manager'
             $data['status'] // e.g., 'active'
         );
         $ok = mysqli_stmt_execute($stmt);
@@ -98,20 +99,23 @@ class PlatformManager extends User {
     /** 生成日报 */
     public function generateDailyReport(string $date): array {
         // 示例：统计当天注册、服务数量等
-        $sql = "SELECT COUNT(*) AS new_users FROM admin_users WHERE DATE(created_at)=?";
+        // Querying the unified 'users' table now.
+        // You might want to add a role filter if you only want to count specific user types.
+        // For example, to count new homeowners: "AND role = 'homeowner'"
+        $sql = "SELECT COUNT(*) AS new_users FROM " . static::$tableName . " WHERE DATE(created_at)=?";
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 's', $date);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $newUsers);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
+        // You can add more stats here, e.g., new services, completed matches etc.
         return ['new_users' => $newUsers];
     }
 
     /** 生成周报 */
     public function generateWeeklyReport(string $startDate, string $endDate): array {
-        $sql = "SELECT COUNT(*) AS new_users FROM admin_users"
-             . " WHERE DATE(created_at) BETWEEN ? AND ?";
+        $sql = "SELECT COUNT(*) AS new_users FROM " . static::$tableName . " WHERE DATE(created_at) BETWEEN ? AND ?";
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'ss', $startDate, $endDate);
         mysqli_stmt_execute($stmt);
@@ -123,8 +127,7 @@ class PlatformManager extends User {
 
     /** 生成月报 */
     public function generateMonthlyReport(int $year, int $month): array {
-        $sql = "SELECT COUNT(*) AS new_users FROM admin_users"
-             . " WHERE YEAR(created_at)=? AND MONTH(created_at)=?";
+        $sql = "SELECT COUNT(*) AS new_users FROM " . static::$tableName . " WHERE YEAR(created_at)=? AND MONTH(created_at)=?";
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'ii', $year, $month);
         mysqli_stmt_execute($stmt);

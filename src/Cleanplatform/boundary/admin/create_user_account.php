@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'status'        => 'active'
     ];
     $controller = new CreateUserAccountController($_POST['role']);
-    $ok = $controller->execute($data);
+    $ok = $controller->createUser($data);
     $message = $ok ? 'User created successfully.' : 'Failed to create user.';
 }
 ?>

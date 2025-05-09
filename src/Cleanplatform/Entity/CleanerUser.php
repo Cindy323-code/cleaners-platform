@@ -4,7 +4,7 @@ namespace Entity;
 require_once __DIR__ . '/User.php';
 
 class CleanerUser extends User {
-    protected static string $tableName = 'cleaners';
+    // 使用基类中已定义的$tableName = 'users'
 
     /** 创建用户账户 */
     public function createUser(array $data): bool {
@@ -24,11 +24,11 @@ class CleanerUser extends User {
         return $ok;
     }
 
-    /** 用户登录 - 从cleaners表查询 */
+    /** 用户登录 - 从users表查询cleaner角色 */
     public function login(string $username, string $password): ?array
     {
         $sql = 'SELECT id, username, password_hash, role, status
-                FROM cleaners WHERE username = ? LIMIT 1';
+                FROM ' . static::$tableName . ' WHERE username = ? AND role = "cleaner" LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 's', $username);
         mysqli_stmt_execute($stmt);
@@ -57,12 +57,12 @@ class CleanerUser extends User {
     /** 创建清洁服务 */
     public function createService(array $data): bool {
         $sql = 'INSERT INTO cleaner_services'
-             . ' (cleaner_id,name,type,price,description)'
+             . ' (user_id,name,type,price,description)'
              . ' VALUES(?,?,?,?,?)';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param(
             $stmt, 'issds',
-            $data['cleaner_id'],
+            $data['user_id'],
             $data['name'],
             $data['type'],
             $data['price'],
@@ -74,11 +74,11 @@ class CleanerUser extends User {
     }
 
     /** 查看我的所有服务 */
-    public function viewServices(int $cleanerId): array {
+    public function viewServices(int $userId): array {
         $sql = 'SELECT id,name,type,price,description,created_at'
-             . ' FROM cleaner_services WHERE cleaner_id = ?';
+             . ' FROM cleaner_services WHERE user_id = ?';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'i', $cleanerId);
+        mysqli_stmt_bind_param($stmt, 'i', $userId);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result(
             $stmt,$id,$name,$type,$price,$description,$createdAt
@@ -114,11 +114,11 @@ class CleanerUser extends User {
     }
 
     /** 删除服务 */
-    public function deleteService(int $id, int $cleanerId): bool {
-        // 修改SQL语句，增加cleanerId作为条件，确保只删除属于该清洁工的服务
-        $sql = 'DELETE FROM cleaner_services WHERE id = ? AND cleaner_id = ?';
+    public function deleteService(int $id, int $userId): bool {
+        // 修改SQL语句，增加userId作为条件，确保只删除属于该清洁工的服务
+        $sql = 'DELETE FROM cleaner_services WHERE id = ? AND user_id = ?';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'ii', $id, $cleanerId);
+        mysqli_stmt_bind_param($stmt, 'ii', $id, $userId);
         $ok = mysqli_stmt_execute($stmt);
         // 检查是否有行被影响（真正删除了服务）
         $affected = mysqli_stmt_affected_rows($stmt);
@@ -128,13 +128,13 @@ class CleanerUser extends User {
     }
 
     /** 搜索服务 */
-    public function searchServices(int $cleanerId, string $keyword): array {
+    public function searchServices(int $userId, string $keyword): array {
         $like = "%$keyword%";
         $sql = 'SELECT id,name,type,price,description'
              . ' FROM cleaner_services'
-             . ' WHERE cleaner_id = ? AND (name LIKE ? OR type LIKE ? OR description LIKE ?)';
+             . ' WHERE user_id = ? AND (name LIKE ? OR type LIKE ? OR description LIKE ?)';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'isss', $cleanerId, $like, $like, $like);
+        mysqli_stmt_bind_param($stmt, 'isss', $userId, $like, $like, $like);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt,$id,$name,$type,$price,$description);
         $res = [];
@@ -147,12 +147,12 @@ class CleanerUser extends User {
 
     /**
      * 执行查看服务操作，对应ViewCleaningServicesController
-     * @param int $cleanerId
+     * @param int $userId
      * @return array
      */
-    public function execute(int $cleanerId): array
+    public function execute(int $userId): array
     {
-        return $this->viewServices($cleanerId);
+        return $this->viewServices($userId);
     }
     
     /**
@@ -189,22 +189,22 @@ class CleanerUser extends User {
     /**
      * 执行删除服务操作，对应DeleteCleaningServiceController
      * @param int $id
-     * @param int $cleanerId
+     * @param int $userId
      * @return bool
      */
-    public function executeDelete(int $id, int $cleanerId): bool
+    public function executeDelete(int $id, int $userId): bool
     {
-        return $this->deleteService($id, $cleanerId);
+        return $this->deleteService($id, $userId);
     }
     
     /**
-     * 执行搜索服务操作，对应SearchCleaningServicesController
-     * @param int $cleanerId
+     * 执行搜索服务操作，对应SearchCleaningServiceController
+     * @param int $userId
      * @param string $keyword
      * @return array
      */
-    public function executeSearch(int $cleanerId, string $keyword): array
+    public function executeSearch(int $userId, string $keyword): array
     {
-        return $this->searchServices($cleanerId, $keyword);
+        return $this->searchServices($userId, $keyword);
     }
 }
