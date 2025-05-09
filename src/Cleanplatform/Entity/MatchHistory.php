@@ -88,7 +88,7 @@ class MatchHistory
         $sql = 'SELECT SUM(s.view_count)
                 FROM service_stats s
                 JOIN cleaner_services cs ON cs.id = s.service_id
-                WHERE cs.cleaner_id = ?';
+                WHERE cs.user_id = ?';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'i', $cleanerId);
         mysqli_stmt_execute($stmt);
@@ -106,7 +106,7 @@ class MatchHistory
         $sql = 'SELECT SUM(s.shortlist_count)
                 FROM service_stats s
                 JOIN cleaner_services cs ON cs.id = s.service_id
-                WHERE cs.cleaner_id = ?';
+                WHERE cs.user_id = ?';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'i', $cleanerId);
         mysqli_stmt_execute($stmt);

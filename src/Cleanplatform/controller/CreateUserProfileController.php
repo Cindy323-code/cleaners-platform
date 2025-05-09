@@ -11,15 +11,13 @@ class CreateUserProfileController {
     }
 
     public function execute(int $userId, array $data) : bool {
-        // 从当前用户的会话中获取userType(角色)
-        $userType = $data['user_type'] ?? $_SESSION['role'];
-        
-        // 确保userType只能是cleaner或homeowner
-        if ($userType !== 'cleaner' && $userType !== 'homeowner') {
+        // 确保用户角色只能是cleaner或homeowner
+        $userRole = $_SESSION['role'] ?? '';
+        if ($userRole !== 'cleaner' && $userRole !== 'homeowner') {
             return false; // admin和manager角色暂时不支持个人资料
         }
         
-        // 调用与控制器同名的方法
-        return $this->entity->execute($userId, $userType, $data);
+        // 调用与控制器同名的方法，只传递userId和data
+        return $this->entity->execute($userId, $data);
     }
 }

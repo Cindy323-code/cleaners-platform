@@ -11,10 +11,13 @@ class UpdateUserProfileController {
     }
 
     public function execute(int $userId, array $fields) : bool {
-        // 获取用户类型
-        $userType = $_SESSION['role'] ?? 'homeowner';
+        // 确保用户角色是有效的
+        $userRole = $_SESSION['role'] ?? '';
+        if ($userRole !== 'cleaner' && $userRole !== 'homeowner') {
+            return false; // admin和manager角色暂时不支持个人资料
+        }
         
-        // 调用entity中的execute方法
-        return $this->entity->execute($userId, $userType, $fields);
+        // 调用entity中的execute方法，只传递userId和fields
+        return $this->entity->execute($userId, $fields);
     }
 }
