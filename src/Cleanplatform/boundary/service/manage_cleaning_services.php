@@ -117,7 +117,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = (new UpdateCleaningServiceController())->execute($serviceId, $fields);
             $message = $result ? 'Service updated successfully' : 'Failed to update service';
             $messageType = $result ? 'success' : 'error';
-            $activeTab = 'view';
+            
+            // Set the active tab based on where the user came from
+            if (isset($_GET['from']) && $_GET['from'] === 'search' && isset($_GET['q']) && $result) {
+                $searchQuery = urlencode($_GET['q']);
+                header("Location: manage_cleaning_services.php?tab=search&q={$searchQuery}&message=updated");
+                exit;
+            } else {
+                $activeTab = 'view';
+            }
 
             // Refresh service list after successful update
             if ($result) {
@@ -169,6 +177,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $activeTab = 'update';
+        
+        // Preserve search parameters if they exist
+        if (isset($_POST['tab']) && $_POST['tab'] === 'search' && isset($_POST['q'])) {
+            // We'll redirect after processing to maintain proper URL parameters
+            $searchQuery = urlencode($_POST['q']);
+            header("Location: manage_cleaning_services.php?tab=update&id={$serviceId}&from=search&q={$searchQuery}");
+            exit;
+        }
     }
 }
 
@@ -176,6 +192,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_GET['q']) && !empty($_GET['q'])) {
     $searchResults = (new SearchCleaningServicesController())->execute($cleanerId, trim($_GET['q']));
     $activeTab = 'search';
+    
+    // Handle message parameter for redirects
+    if (isset($_GET['message']) && $_GET['message'] === 'updated') {
+        $message = 'Service updated successfully';
+        $messageType = 'success';
+    }
 }
 
 // Get service for editing from URL parameter
@@ -187,6 +209,15 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
         if ($service['id'] == $serviceId) {
             $serviceToEdit = $service;
             break;
+        }
+    }
+    
+    // Check if this edit is from search results
+    if (isset($_SERVER['HTTP_REFERER'])) {
+        $referer = $_SERVER['HTTP_REFERER'];
+        if (strpos($referer, 'tab=search') !== false && preg_match('/q=([^&]+)/', $referer, $matches)) {
+            // Save the search query for the cancel button
+            $searchQuery = $matches[1];
         }
     }
 }
@@ -235,11 +266,7 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
                             <div class="service-description"><?= htmlspecialchars($service['description']) ?></div>
                         <?php endif; ?>
                         <div class="service-actions">
-                            <form method="post" style="display: inline;">
-                                <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
-                                <input type="hidden" name="action" value="edit">
-                                <button type="submit" class="btn btn-small">Edit</button>
-                            </form>
+                            <a href="?tab=update&id=<?= $service['id'] ?>" class="btn btn-small">Edit</a>
                             <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this service? This action cannot be undone.');">
                                 <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
                                 <input type="hidden" name="action" value="delete">
@@ -292,14 +319,12 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
                                     <div class="service-description"><?= htmlspecialchars($service['description']) ?></div>
                                 <?php endif; ?>
                                 <div class="service-actions">
-                                    <form method="post" style="display: inline;">
-                                        <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
-                                        <input type="hidden" name="action" value="edit">
-                                        <button type="submit" class="btn btn-small">Edit</button>
-                                    </form>
+                                    <a href="?tab=update&id=<?= $service['id'] ?>" class="btn btn-small">Edit</a>
                                     <form method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this service? This action cannot be undone.');">
                                         <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
                                         <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="tab" value="search">
+                                        <input type="hidden" name="q" value="<?= htmlspecialchars(isset($_GET['q']) ? $_GET['q'] : '') ?>">
                                         <button type="submit" class="btn btn-small btn-danger">Delete</button>
                                     </form>
                                 </div>
@@ -401,7 +426,11 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
 
                 <div class="button-group">
                     <button type="submit" class="btn">Update Service</button>
-                    <a href="?tab=view" class="btn btn-secondary">Cancel</a>
+                    <?php if (isset($searchQuery)): ?>
+                        <a href="?tab=search&q=<?= htmlspecialchars($searchQuery) ?>" class="btn btn-secondary">Back to Search</a>
+                    <?php else: ?>
+                        <a href="?tab=view" class="btn btn-secondary">Cancel</a>
+                    <?php endif; ?>
                 </div>
             </form>
         <?php else: ?>
