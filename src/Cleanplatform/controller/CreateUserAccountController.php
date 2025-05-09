@@ -16,7 +16,7 @@ class CreateUserAccountController {
      * @param array $data 用户数据
      * @return bool 操作是否成功
      */
-    public function createUser(array $data) : bool {
+    public function execute(array $data) : bool {
         // 控制器仅负责数据传输，不处理业务逻辑
         return $this->entity->executeCreate($data);
     }
