@@ -25,7 +25,7 @@ class CleanerUser extends User {
     }
 
     /** 用户登录 - 从users表查询cleaner角色 */
-    public function login(string $username, string $password): ?array
+    public function login(string $username, string $password, string $requiredRole): ?array
     {
         $sql = 'SELECT id, username, password_hash, role, status
                 FROM ' . static::$tableName . ' WHERE username = ? LIMIT 1';
@@ -41,7 +41,7 @@ class CleanerUser extends User {
                      || $password === $hash
                      || (strlen($hash) === 32 && md5($password) === $hash);
 
-            if ($verified && $status === 'active' && strtolower($role) === 'cleaner') {
+            if ($verified && $status === 'active' && strtolower($role) === strtolower($requiredRole)) {
                 $result = [
                     'id'       => $id,
                     'username' => $user,
