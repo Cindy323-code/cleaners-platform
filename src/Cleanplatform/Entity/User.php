@@ -21,11 +21,12 @@ abstract class User
      * 执行登录操作，对应各Login控制器
      * @param string $username
      * @param string $password
+     * @param string $requiredRole The role that must match for successful login
      * @return array|null
      */
-    public function executeLogin(string $username, string $password): ?array
+    public function executeLogin(string $username, string $password, string $requiredRole): ?array
     {
-        return $this->login($username, $password);
+        return $this->login($username, $password, $requiredRole);
     }
 
     /**
@@ -54,8 +55,14 @@ abstract class User
         }
     }
 
-    /** 通用登录 */
-    public function login(string $username, string $password): ?array
+    /** 
+     * 通用登录 
+     * @param string $username The username
+     * @param string $password The password
+     * @param string $requiredRole The role that must match for successful login
+     * @return array|null
+     */
+    public function login(string $username, string $password, string $requiredRole): ?array
     {
         $sql = 'SELECT id, username, password_hash, role, status
                 FROM ' . static::$tableName . ' WHERE username = ? LIMIT 1';
@@ -67,12 +74,12 @@ abstract class User
         $result = null;
 
         if (mysqli_stmt_fetch($stmt)) {
-
             $verified = password_verify($password, $hash)
                      || $password === $hash
                      || (strlen($hash) === 32 && md5($password) === $hash);
 
-            if ($verified && $status === 'active') {
+            // Verify the user's role matches the required role for this login attempt
+            if ($verified && $status === 'active' && strtolower($role) === strtolower($requiredRole)) {
                 $result = [
                     'id'       => $id,
                     'username' => $user,

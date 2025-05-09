@@ -127,9 +127,6 @@ $userId = $_SESSION['user']['id'];
                     <a href="/Cleanplatform/boundary/profile/update_user_profile.php" class="btn btn-small">Update Profile</a>
                 </div>
             </div>
-            <div class="module-footer">
-                <a href="/Cleanplatform/boundary/profile/deactivate_user_profile.php" class="btn btn-small">Deactivate Profile</a>
-            </div>
         </div>
     </div>
 
@@ -242,9 +239,6 @@ $userId = $_SESSION['user']['id'];
                     <a href="/Cleanplatform/boundary/profile/view_user_profile.php" class="btn btn-small">View Profile</a>
                     <a href="/Cleanplatform/boundary/profile/update_user_profile.php" class="btn btn-small">Update Profile</a>
                 </div>
-            </div>
-            <div class="module-footer">
-                <a href="/Cleanplatform/boundary/profile/deactivate_user_profile.php" class="btn btn-small">Deactivate Profile</a>
             </div>
         </div>
     </div>

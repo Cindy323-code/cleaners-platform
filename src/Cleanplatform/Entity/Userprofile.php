@@ -43,16 +43,6 @@ class UserProfile
     }
 
     /**
-     * 执行停用档案操作
-     * @param int    $userId
-     * @return bool
-     */
-    public function executeDeactivate(int $userId): bool
-    {
-        return $this->deactivateProfile($userId);
-    }
-
-    /**
      * 执行搜索档案操作
      * @param array $criteria ['full_name','role']
      * @return array
@@ -71,8 +61,8 @@ class UserProfile
     public function createProfile(int $userId, array $data): bool
     {
         $sql = 'INSERT INTO user_profiles
-                (user_id, full_name, avatar_url, bio, availability, status)
-                VALUES (?, ?, ?, ?, ?, "active")';
+                (user_id, full_name, avatar_url, bio, availability)
+                VALUES (?, ?, ?, ?, ?)';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param(
             $stmt,
@@ -95,7 +85,7 @@ class UserProfile
      */
     public function viewProfile(int $userId): ?array
     {
-        $sql = 'SELECT full_name, avatar_url, bio, availability, status
+        $sql = 'SELECT full_name, avatar_url, bio, availability
                 FROM user_profiles
                 WHERE user_id = ? LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
@@ -106,8 +96,7 @@ class UserProfile
             $fullName,
             $avatarUrl,
             $bio,
-            $availability,
-            $status
+            $availability
         );
         $result = null;
         if (mysqli_stmt_fetch($stmt)) {
@@ -115,8 +104,7 @@ class UserProfile
                 'full_name'    => $fullName,
                 'avatar_url'   => $avatarUrl,
                 'bio'          => $bio,
-                'availability' => $availability,
-                'status'       => $status
+                'availability' => $availability
             ];
         }
         mysqli_stmt_close($stmt);
@@ -156,23 +144,6 @@ class UserProfile
     }
 
     /**
-     * 暂停/停用个人档案
-     * @param int    $userId
-     * @return bool
-     */
-    public function deactivateProfile(int $userId): bool
-    {
-        $sql = 'UPDATE user_profiles
-                SET status = "inactive"
-                WHERE user_id = ?';
-        $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'i', $userId);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
-    }
-
-    /**
      * 搜索其他用户档案
      * @param array $criteria ['full_name','role']
      * @return array
@@ -194,11 +165,6 @@ class UserProfile
             $sql   .= ' AND u.role = ?';
             $types .= 's';
             $values[] = $criteria['role'];
-        }
-        if (!empty($criteria['status'])) {
-            $sql   .= ' AND p.status = ?';
-            $types .= 's';
-            $values[] = $criteria['status'];
         }
         if (!empty($types)) {
             $stmt = mysqli_prepare($this->conn, $sql);

@@ -36,10 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($controller) {
         $userInfo = $controller->execute($username, $password);
         if ($userInfo) {
-            $_SESSION['user'] = $userInfo;
-            $_SESSION['role'] = $role;
-            header('Location: /Cleanplatform/public/dashboard.php');
-            exit;
+            if (strtolower($userInfo['role']) === strtolower($role)) {
+                $_SESSION['user'] = $userInfo;
+                $_SESSION['role'] = strtolower($userInfo['role']);
+                header('Location: /Cleanplatform/public/dashboard.php');
+                exit;
+            } else {
+                $errorMessage = 'Access denied: Role mismatch.';
+            }
         } else {
             $errorMessage = 'Invalid username or password.';
         }

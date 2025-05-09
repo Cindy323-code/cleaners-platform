@@ -1,17 +1,13 @@
 <?php
 namespace Controller;
 
-use Entity\CleanerUser;
 use Entity\User;
 
 class CleanerLoginController {
-    private CleanerUser $entity;
-
-    public function __construct() {
-        $this->entity = User::getInstance(['role' => 'cleaner']);
-    }
-
-    public function execute(string $username, string $password) : ?array {
-        return $this->entity->executeLogin($username, $password);
+    
+    public function execute(string $username, string $password): ?array {
+        // Get cleaner entity and pass login credentials to it with required role
+        $user = User::getInstance(['role' => 'cleaner']);
+        return $user->executeLogin($username, $password, 'cleaner');
     }
 }

@@ -30,7 +30,6 @@ CREATE TABLE user_profiles (
     avatar_url    VARCHAR(255),
     bio           TEXT,
     availability  VARCHAR(100),
-    status        ENUM('active','inactive') DEFAULT 'active',
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uk_user_profile (user_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

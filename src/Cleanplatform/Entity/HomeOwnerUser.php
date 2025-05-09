@@ -99,7 +99,7 @@ class HomeOwnerUser extends User {
     }
 
     /** 用户登录 - 从users表查询homeowner角色 */
-    public function login(string $username, string $password): ?array
+    public function login(string $username, string $password, string $requiredRole): ?array
     {
         $sql = 'SELECT id, username, password_hash, role, status
                 FROM ' . static::$tableName . ' WHERE username = ? LIMIT 1';
@@ -115,7 +115,8 @@ class HomeOwnerUser extends User {
                      || $password === $hash
                      || (strlen($hash) === 32 && md5($password) === $hash);
 
-            if ($verified && $status === 'active' && strtolower($role) === 'homeowner') {
+            if ($verified && $status === 'active' && strtolower($role) === 'homeowner' && 
+                strtolower($requiredRole) === 'homeowner') {
                 $result = [
                     'id'       => $id,
                     'username' => $user,

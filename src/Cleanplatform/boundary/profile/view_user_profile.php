@@ -49,12 +49,6 @@ $profile = $controller->execute($userId, $userRole);
                 <p><strong>Availability:</strong> <?= htmlspecialchars($profile['availability']) ?></p>
             <?php endif; ?>
             
-            <p><strong>Profile Status:</strong> 
-                <span class="status-badge status-<?= htmlspecialchars(strtolower($profile['status'])) ?>">
-                    <?= htmlspecialchars($profile['status']) ?>
-                </span>
-            </p>
-            
             <?php if(isset($profile['updated_at'])): ?>
                 <p><strong>Last Updated:</strong> <?= htmlspecialchars($profile['updated_at']) ?></p>
             <?php endif; ?>
@@ -72,11 +66,6 @@ $profile = $controller->execute($userId, $userRole);
     <div class="button-group">
         <?php if($profile): ?>
             <a href="update_user_profile.php" class="btn">Update Profile</a>
-            <?php if($profile['status'] === 'active'): ?>
-                <a href="deactivate_user_profile.php" class="btn">Deactivate Profile</a>
-            <?php else: ?>
-                <a href="update_user_profile.php?action=activate" class="btn">Activate Profile</a>
-            <?php endif; ?>
         <?php else: ?>
             <a href="create_user_profile.php" class="btn">Create Profile</a>
         <?php endif; ?>

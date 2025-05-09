@@ -1,17 +1,13 @@
 <?php
 namespace Controller;
 
-use Entity\HomeOwnerUser;
 use Entity\User;
 
 class HomeownerLoginController {
-    private HomeOwnerUser $entity;
-
-    public function __construct() {
-        $this->entity = User::getInstance(['role' => 'homeowner']);
-    }
-
-    public function execute(string $username, string $password) : ?array {
-        return $this->entity->executeLogin($username, $password);
+    
+    public function execute(string $username, string $password): ?array {
+        // Get homeowner entity and pass login credentials to it with required role
+        $user = User::getInstance(['role' => 'homeowner']);
+        return $user->executeLogin($username, $password, 'homeowner');
     }
 }
