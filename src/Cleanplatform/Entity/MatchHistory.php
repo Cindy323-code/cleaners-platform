@@ -208,9 +208,13 @@ class MatchHistory
      */
     public function searchUsageHistory(int $homeownerId, array $f): array
     {
-        $sql = 'SELECT mh.id, cs.name, cs.type, mh.service_date, mh.price_charged, mh.status
+        $sql = 'SELECT mh.id, cs.name, cs.type, cs.description, mh.service_date, mh.price_charged, mh.status,
+                       u.id as cleaner_id, u.username as cleaner_username, 
+                       COALESCE(up.full_name, u.username) as cleaner_name, up.avatar_url
                 FROM match_histories mh
                 JOIN cleaner_services cs ON cs.id = mh.service_id
+                JOIN users u ON u.id = mh.cleaner_id
+                LEFT JOIN user_profiles up ON up.user_id = u.id
                 WHERE mh.homeowner_id = ?';
         $types  = 'i';
         $values = [$homeownerId];
@@ -241,13 +245,19 @@ class MatchHistory
             $id,
             $name,
             $type,
+            $description,
             $date,
             $price,
-            $status
+            $status,
+            $cleaner_id,
+            $cleaner_username,
+            $cleaner_name,
+            $avatar_url
         );
         $res = [];
         while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('id','name','type','date','price','status');
+            $res[] = compact('id', 'name', 'type', 'description', 'date', 'price', 'status', 
+                              'cleaner_id', 'cleaner_username', 'cleaner_name', 'avatar_url');
         }
         mysqli_stmt_close($stmt);
         return $res;
@@ -258,10 +268,14 @@ class MatchHistory
      */
     public function getUsageDetails(int $historyId): ?array
     {
-        $sql = 'SELECT mh.id, cs.name, cs.type, mh.service_date,
-                       mh.price_charged, mh.status, mh.feedback
+        $sql = 'SELECT mh.id, cs.name, cs.type, cs.description, mh.service_date,
+                       mh.price_charged, mh.status, mh.feedback,
+                       u.id as cleaner_id, u.username as cleaner_username, 
+                       COALESCE(up.full_name, u.username) as cleaner_name, up.avatar_url, up.bio as cleaner_bio
                 FROM match_histories mh
                 JOIN cleaner_services cs ON cs.id = mh.service_id
+                JOIN users u ON u.id = mh.cleaner_id
+                LEFT JOIN user_profiles up ON up.user_id = u.id
                 WHERE mh.id = ? AND mh.homeowner_id = ? LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 'ii', $historyId, $_SESSION['user']['id']);
@@ -271,14 +285,21 @@ class MatchHistory
             $id,
             $name,
             $type,
+            $description,
             $date,
             $price,
             $status,
-            $feedback
+            $feedback,
+            $cleaner_id,
+            $cleaner_username,
+            $cleaner_name,
+            $avatar_url,
+            $cleaner_bio
         );
         $result = null;
         if (mysqli_stmt_fetch($stmt)) {
-            $result = compact('id','name','type','date','price','status','feedback');
+            $result = compact('id', 'name', 'type', 'description', 'date', 'price', 'status', 'feedback',
+                              'cleaner_id', 'cleaner_username', 'cleaner_name', 'avatar_url', 'cleaner_bio');
         }
         mysqli_stmt_close($stmt);
         return $result;

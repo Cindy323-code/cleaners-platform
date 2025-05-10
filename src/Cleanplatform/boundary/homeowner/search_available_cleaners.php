@@ -61,10 +61,7 @@ $results = $controller->execute($criteria);
             <?php foreach ($results as $cleaner): ?>
                 <div class="cleaner-card">
                     <div class="cleaner-header">
-                        <h3><?= htmlspecialchars($cleaner['username']) ?></h3>
-                        <?php if (!empty($cleaner['full'])): ?>
-                            <p class="cleaner-fullname"><?= htmlspecialchars($cleaner['full']) ?></p>
-                        <?php endif; ?>
+                        <h3><?= htmlspecialchars(!empty($cleaner['full']) ? $cleaner['full'] : $cleaner['username']) ?></h3>
                     </div>
                     
                     <div class="cleaner-content">
@@ -103,34 +100,7 @@ $results = $controller->execute($criteria);
 </div>
 
 <style>
-.card {
-    background: #fff;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    padding: 20px;
-}
-.card-title {
-    border-bottom: 1px solid #eee;
-    font-size: 18px;
-    margin: -20px -20px 20px;
-    padding: 15px 20px;
-    background: #f8f9fa;
-}
-.form-group {
-    margin-bottom: 15px;
-}
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-.form-group input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
+/* 仅保留页面特有样式，移除与全局样式重复的部分 */
 .form-actions {
     margin-top: 15px;
     display: flex;
@@ -211,6 +181,16 @@ $results = $controller->execute($criteria);
 }
 .cleaner-actions form {
     display: inline;
+}
+/* 修复按钮高度不一致问题 */
+.cleaner-actions .btn,
+.cleaner-actions button.btn {
+    height: 38px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 </style>
 

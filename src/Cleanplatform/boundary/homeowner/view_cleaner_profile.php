@@ -19,24 +19,12 @@ $services = [];
 $cleanerId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if ($cleanerId) {
-    // 获取清洁工档案
+    // 获取清洁工档案和服务信息
     $cleaner = (new ViewCleanerProfileController())->execute($cleanerId);
-
-    // 获取清洁工的服务
-    if ($cleaner) {
-        $db = \Config\Database::getConnection();
-        $sql = 'SELECT id, name, type, price, description
-                FROM cleaner_services
-                WHERE user_id = ?';
-        $stmt = mysqli_prepare($db, $sql);
-        mysqli_stmt_bind_param($stmt, 'i', $cleanerId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-
-        while ($row = mysqli_fetch_assoc($result)) {
-            $services[] = $row;
-        }
-        mysqli_stmt_close($stmt);
+    
+    // 服务信息已包含在cleaner数据中
+    if ($cleaner && isset($cleaner['services'])) {
+        $services = $cleaner['services'];
     }
 }
 ?>
@@ -60,30 +48,34 @@ if ($cleanerId) {
 <?php if ($cleaner): ?>
 <!-- Profile Information -->
 <div class="card">
-    <div class="profile-header">
-        <div class="profile-avatar">
-            <?php if (!empty($cleaner['avatar_url'])): ?>
-                <img src="<?= htmlspecialchars($cleaner['avatar_url']) ?>" alt="Profile Picture">
-            <?php else: ?>
-                <div class="avatar-placeholder"><?= htmlspecialchars(substr($cleaner['username'], 0, 1)) ?></div>
-            <?php endif; ?>
-        </div>
-
-        <div class="profile-info">
-            <h2><?= htmlspecialchars($cleaner['username']) ?></h2>
-            <?php if (!empty($cleaner['full'])): ?>
-                <h3><?= htmlspecialchars($cleaner['full']) ?></h3>
-            <?php endif; ?>
-            <p class="profile-id">Cleaner ID: <?= htmlspecialchars($cleaner['id']) ?></p>
-            <?php if (!empty($cleaner['status'])): ?>
-                <span class="profile-status <?= $cleaner['status'] === 'active' ? 'active' : 'inactive' ?>">
-                    <?= htmlspecialchars(ucfirst($cleaner['status'])) ?>
-                </span>
-            <?php endif; ?>
-        </div>
-    </div>
-
+    <div class="card-title">Profile Information</div>
     <div class="profile-content">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <?php if (!empty($cleaner['avatar_url'])): ?>
+                    <img src="<?= htmlspecialchars($cleaner['avatar_url']) ?>" alt="Profile Picture">
+                <?php else: ?>
+                    <?php 
+                        // 使用全名或用户名的第一个字母作为占位符
+                        $initials = !empty($cleaner['full_name']) ? 
+                            substr($cleaner['full_name'], 0, 1) : 
+                            substr($cleaner['username'], 0, 1);
+                    ?>
+                    <div class="avatar-placeholder"><?= htmlspecialchars($initials) ?></div>
+                <?php endif; ?>
+            </div>
+
+            <div class="profile-info">
+                <h2><?= htmlspecialchars(!empty($cleaner['full_name']) ? $cleaner['full_name'] : $cleaner['username']) ?></h2>
+                <p class="profile-id">Cleaner ID: <?= htmlspecialchars($cleaner['id']) ?></p>
+                <?php if (!empty($cleaner['status'])): ?>
+                    <span class="profile-status <?= $cleaner['status'] === 'active' ? 'active' : 'inactive' ?>">
+                        <?= htmlspecialchars(ucfirst($cleaner['status'])) ?>
+                    </span>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <div class="profile-section">
             <h3>About</h3>
             <?php if (!empty($cleaner['bio'])): ?>
@@ -115,21 +107,26 @@ if ($cleanerId) {
             <p>This cleaner hasn't added any services yet.</p>
         </div>
     <?php else: ?>
-        <div class="services-grid">
+        <div class="cleaners-grid">
             <?php foreach ($services as $service): ?>
-                <div class="service-card">
-                    <div class="service-header">
-                        <h4><?= htmlspecialchars($service['name']) ?></h4>
+                <div class="cleaner-card">
+                    <div class="cleaner-header">
+                        <h3><?= htmlspecialchars($service['name']) ?></h3>
                         <span class="service-type"><?= htmlspecialchars($service['type']) ?></span>
                     </div>
-                    <div class="service-price">$<?= htmlspecialchars($service['price']) ?></div>
-                    <div class="service-id">Service ID: <?= htmlspecialchars($service['id']) ?></div>
-                    <?php if (!empty($service['description'])): ?>
-                        <div class="service-description">
-                            <?= htmlspecialchars($service['description']) ?>
-                        </div>
-                    <?php endif; ?>
-                    <div class="service-actions">
+                    
+                    <div class="cleaner-content">
+                        <p class="service-price">Price: $<?= htmlspecialchars($service['price']) ?></p>
+                        <p class="service-id">Service ID: <?= htmlspecialchars($service['id']) ?></p>
+                        
+                        <?php if (!empty($service['description'])): ?>
+                            <div class="service-info">
+                                <div class="service-description">Description: <?= htmlspecialchars($service['description']) ?></div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="cleaner-actions">
                         <form action="/Cleanplatform/boundary/shortlist/add_to_shortlist.php" method="post">
                             <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
                             <button type="submit" class="btn btn-small">Add to Shortlist</button>
@@ -171,16 +168,15 @@ if ($cleanerId) {
     border-radius: 0 4px 4px 0;
 }
 .profile-header {
-    padding: 30px;
-    background: linear-gradient(to right, #4285f4, #34a853);
-    color: white;
+    padding: 20px;
+    background: #f8f9fa;
     display: flex;
     align-items: center;
-    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #eee;
 }
 .profile-avatar {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     overflow: hidden;
     margin-right: 20px;
@@ -188,7 +184,7 @@ if ($cleanerId) {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 .profile-avatar img {
     width: 100%;
@@ -196,18 +192,14 @@ if ($cleanerId) {
     object-fit: cover;
 }
 .avatar-placeholder {
-    font-size: 40px;
-    color: #4285f4;
+    font-size: 30px;
+    color: var(--primary-color);
     text-transform: uppercase;
 }
 .profile-info h2 {
     margin: 0 0 5px 0;
     font-size: 24px;
-}
-.profile-info h3 {
-    margin: 0 0 10px 0;
-    font-size: 18px;
-    font-weight: normal;
+    color: var(--primary-color);
 }
 .profile-id {
     margin: 0 0 10px 0;
@@ -230,75 +222,137 @@ if ($cleanerId) {
     color: white;
 }
 .profile-content {
-    padding: 20px;
+    padding: 0;
 }
 .profile-section {
     margin-bottom: 20px;
+    padding: 15px;
 }
 .profile-section h3 {
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
     margin-top: 0;
-    color: #4285f4;
+    color: var(--primary-color);
+    font-size: 18px;
+}
+.profile-section h4 {
+    color: #555;
+    margin: 15px 0 5px;
+    font-size: 16px;
 }
 .empty-notice {
     color: #888;
     font-style: italic;
 }
-.services-grid {
+.cleaners-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
     gap: 20px;
     margin: 20px 0;
 }
-.service-card {
+.cleaner-card {
     border: 1px solid #eee;
-    border-radius: 8px;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.cleaner-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.cleaner-header {
+    background: #f8f9fa;
     padding: 15px;
-    position: relative;
-    transition: all 0.2s;
+    border-bottom: 1px solid #eee;
 }
-.service-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-.service-header {
-    margin-bottom: 10px;
-}
-.service-header h4 {
+.cleaner-header h3 {
     margin: 0 0 5px 0;
+    color: var(--primary-color);
+}
+.cleaner-content {
+    padding: 15px;
 }
 .service-type {
     display: inline-block;
-    background: #f1f3f4;
-    padding: 2px 8px;
-    border-radius: 10px;
+    background: rgba(66, 133, 244, 0.1);
+    color: var(--primary-color);
+    padding: 3px 8px;
+    border-radius: 12px;
     font-size: 12px;
-    color: #5f6368;
 }
 .service-price {
-    font-size: 20px;
     font-weight: bold;
-    color: #34a853;
-    margin-bottom: 5px;
+    color: #28a745;
+    margin: 5px 0;
+    font-size: 16px;
 }
 .service-id {
-    font-size: 12px;
+    margin: 5px 0;
+    font-size: 14px;
     color: #5f6368;
-    margin-bottom: 10px;
+}
+.service-info {
+    background: rgba(0, 123, 255, 0.05);
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
 }
 .service-description {
     font-size: 14px;
     color: #5f6368;
-    margin-bottom: 15px;
 }
-.service-actions {
-    margin-top: 10px;
-}
-.button-group {
-    padding: 15px 20px;
+.cleaner-actions {
+    padding: 15px;
     background: #f8f9fa;
     border-top: 1px solid #eee;
-    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+.cleaner-actions form {
+    display: inline;
+    width: 100%;
+}
+.cleaner-actions .btn,
+.cleaner-actions button.btn {
+    height: 38px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+}
+.button-group {
+    padding: 15px;
+    text-align: center;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+.empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin: 15px 0;
+}
+.empty-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+.empty-state h3 {
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 18px;
+}
+.empty-state p {
+    margin-bottom: 15px;
+    color: #777;
+}
+.empty-state .btn {
+    margin-top: 10px;
 }
 </style>
 

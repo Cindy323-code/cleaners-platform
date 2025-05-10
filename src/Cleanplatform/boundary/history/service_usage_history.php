@@ -55,6 +55,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     <!-- Detail View -->
     <div class="card">
         <div class="card-title">Service Usage Details</div>
+        
+        <!-- Cleaner Info -->
+        <div class="cleaner-profile">
+            <div class="cleaner-avatar">
+                <?php if (!empty($details['avatar_url'])): ?>
+                    <img src="<?= htmlspecialchars($details['avatar_url']) ?>" alt="Cleaner Avatar">
+                <?php else: ?>
+                    <div class="avatar-placeholder">
+                        <?= htmlspecialchars(substr($details['cleaner_name'], 0, 1)) ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="cleaner-info">
+                <h3><?= htmlspecialchars($details['cleaner_name']) ?></h3>
+                <a href="/Cleanplatform/boundary/homeowner/view_cleaner_profile.php?id=<?= $details['cleaner_id'] ?>" 
+                   class="btn btn-small">View Profile</a>
+            </div>
+        </div>
+        
         <div class="details-list">
             <div class="detail-item">
                 <div class="detail-label">Service ID:</div>
@@ -68,6 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 <div class="detail-label">Service Type:</div>
                 <div class="detail-value"><?= htmlspecialchars($details['type']) ?></div>
             </div>
+            <?php if (!empty($details['description'])): ?>
+            <div class="detail-item">
+                <div class="detail-label">Description:</div>
+                <div class="detail-value"><?= htmlspecialchars($details['description']) ?></div>
+            </div>
+            <?php endif; ?>
             <div class="detail-item">
                 <div class="detail-label">Service Date:</div>
                 <div class="detail-value"><?= htmlspecialchars($details['date']) ?></div>
@@ -151,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                             <th>ID</th>
                             <th>Service Name</th>
                             <th>Type</th>
+                            <th>Cleaner</th>
                             <th>Date</th>
                             <th>Price</th>
                             <th>Status</th>
@@ -163,6 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                                 <td><?= htmlspecialchars($r['id']) ?></td>
                                 <td><?= htmlspecialchars($r['name']) ?></td>
                                 <td><?= htmlspecialchars($r['type']) ?></td>
+                                <td><?= htmlspecialchars($r['cleaner_name']) ?></td>
                                 <td><?= htmlspecialchars($r['date']) ?></td>
                                 <td>$<?= htmlspecialchars($r['price']) ?></td>
                                 <td>
@@ -195,6 +222,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 .form-group {
     flex: 1;
     min-width: 200px;
+}
+.cleaner-profile {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+.cleaner-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 20px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.cleaner-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.avatar-placeholder {
+    font-size: 28px;
+    color: var(--primary-color);
+    text-transform: uppercase;
+}
+.cleaner-info {
+    flex: 1;
+}
+.cleaner-info h3 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    font-size: 18px;
 }
 .details-list {
     margin: 20px 0;
@@ -239,6 +305,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 .status-cancelled {
     background: #f8d7da;
     color: #721c24;
+}
+.empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin: 15px 0;
+}
+.empty-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+.empty-state h3 {
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 18px;
+}
+.empty-state p {
+    margin-bottom: 15px;
+    color: #777;
 }
 </style>
 

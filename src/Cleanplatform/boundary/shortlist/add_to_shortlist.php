@@ -118,8 +118,8 @@ if (isset($_GET['service_id']) && intval($_GET['service_id']) > 0) {
                 <input type="number" id="service_id" name="service_id" placeholder="Enter Service ID" value="<?= isset($_POST['service_id']) ? htmlspecialchars($_POST['service_id']) : '' ?>" required>
             </div>
             <div class="button-group">
-                <button type="submit" class="btn">Add to Shortlist</button>
-                <a href="/Cleanplatform/public/dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
+                <button type="submit" class="btn btn-small">Add to Shortlist</button>
+                <a href="/Cleanplatform/public/dashboard.php" class="btn btn-small btn-secondary">Back to Dashboard</a>
             </div>
         </form>
     </div>

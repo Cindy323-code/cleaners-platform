@@ -329,7 +329,7 @@ class HomeOwnerUser extends User {
             mysqli_stmt_close($updateStmt);
         } else {
             // 创建新记录
-            $insertSql = 'INSERT INTO service_stats (service_id, shortlist_count) VALUES (?, 1)';
+            $insertSql = 'INSERT INTO service_stats (service_id, shortlist_count, view_count) VALUES (?, 1, 0)';
             $insertStmt = mysqli_prepare($this->conn, $insertSql);
             mysqli_stmt_bind_param($insertStmt, 'i', $serviceId);
             mysqli_stmt_execute($insertStmt);
@@ -339,10 +339,12 @@ class HomeOwnerUser extends User {
     
     public function viewShortlist(int $userId): array {
         $sql = 'SELECT s.id as shortlist_id, cs.id as service_id, cs.name, cs.type, cs.price,
-                cs.description, u.id as cleaner_id, u.username as cleaner_name
+                cs.description, u.id as cleaner_id, u.username as cleaner_username, 
+                COALESCE(p.full_name, u.username) as cleaner_name
                 FROM shortlists s
                 JOIN cleaner_services cs ON s.service_id = cs.id
                 JOIN ' . static::$tableName . ' u ON cs.user_id = u.id
+                LEFT JOIN user_profiles p ON u.id = p.user_id
                 WHERE s.user_id = ? AND u.role = "cleaner"
                 ORDER BY s.added_at DESC';
         $stmt = mysqli_prepare($this->conn, $sql);
@@ -361,15 +363,17 @@ class HomeOwnerUser extends User {
     public function searchShortlist(int $userId, string $keyword): array {
         $like = '%' . $keyword . '%';
         $sql = 'SELECT s.id as shortlist_id, cs.id as service_id, cs.name, cs.type, cs.price,
-                cs.description, u.id as cleaner_id, u.username as cleaner_name
+                cs.description, u.id as cleaner_id, u.username as cleaner_username, 
+                COALESCE(p.full_name, u.username) as cleaner_name
                 FROM shortlists s
                 JOIN cleaner_services cs ON s.service_id = cs.id
                 JOIN ' . static::$tableName . ' u ON cs.user_id = u.id
+                LEFT JOIN user_profiles p ON u.id = p.user_id
                 WHERE s.user_id = ? AND u.role = "cleaner" AND 
-                (cs.name LIKE ? OR cs.type LIKE ? OR cs.description LIKE ? OR u.username LIKE ?)
+                (cs.name LIKE ? OR cs.type LIKE ? OR cs.description LIKE ? OR u.username LIKE ? OR p.full_name LIKE ?)
                 ORDER BY s.added_at DESC';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'issss', $userId, $like, $like, $like, $like);
+        mysqli_stmt_bind_param($stmt, 'isssss', $userId, $like, $like, $like, $like, $like);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         
