@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p class="warning">Warning: Suspending a user will prevent them from accessing the system. This action can be reversed by updating their status back to active.</p>
     </div>
     
-    <button type="submit" class="btn">Suspend User</button>
+    <button type="submit" class="btn btn-danger">Suspend User</button>
   </form>
 </div>
 

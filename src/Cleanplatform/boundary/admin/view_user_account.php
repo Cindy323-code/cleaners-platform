@@ -90,7 +90,7 @@ if ($username) {
                 <a href="?username=<?=htmlspecialchars($user['user'])?>" class="btn btn-small">View</a>
                 <a href="update_user_account.php?username=<?=htmlspecialchars($user['user'])?>" class="btn btn-small">Update</a>
                 <?php if ($user['status'] !== 'suspended'): ?>
-                  <a href="suspend_user_account.php?username=<?=htmlspecialchars($user['user'])?>" class="btn btn-small">Suspend</a>
+                  <a href="suspend_user_account.php?username=<?=htmlspecialchars($user['user'])?>" class="btn btn-small btn-danger">Suspend</a>
                 <?php endif; ?>
               </td>
             </tr>

@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
               <a href="../admin/view_user_account.php?username=<?= htmlspecialchars($row['user']) ?>" class="btn btn-small">View</a>
               <a href="../admin/update_user_account.php?username=<?= htmlspecialchars($row['user']) ?>" class="btn btn-small">Update</a>
               <?php if ($row['status'] !== 'suspended'): ?>
-                <a href="../admin/suspend_user_account.php?username=<?= htmlspecialchars($row['user']) ?>" class="btn btn-small">Suspend</a>
+                <a href="../admin/suspend_user_account.php?username=<?= htmlspecialchars($row['user']) ?>" class="btn btn-small btn-danger">Suspend</a>
               <?php endif; ?>
             </td>
           </tr>

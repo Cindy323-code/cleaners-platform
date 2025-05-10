@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <a href="?username=<?=htmlspecialchars($user['user'])?>" class="btn btn-small">Select for Update</a>
               <a href="view_user_account.php?username=<?=htmlspecialchars($user['user'])?>" class="btn btn-small">View</a>
               <?php if ($user['status'] !== 'suspended'): ?>
-                <a href="suspend_user_account.php?username=<?=htmlspecialchars($user['user'])?>" class="btn btn-small">Suspend</a>
+                <a href="suspend_user_account.php?username=<?=htmlspecialchars($user['user'])?>" class="btn btn-small btn-danger">Suspend</a>
               <?php endif; ?>
             </td>
           </tr>
