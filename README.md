@@ -11,7 +11,6 @@
 - PHP 8.0+
 - MySQL 5.7+ / MariaDB 10.2+
 - Web服务器（Apache/Nginx）
-- (可选) Node.js 16+（如需使用前端Vite项目）
 
 ## 部署指南
 
@@ -45,15 +44,14 @@
 
 ### 访问系统
 
-- 后端: 打开浏览器访问 `http://localhost/Cleanplatform/public/index.php`
+- 打开浏览器访问 `http://localhost/Cleanplatform/public/index.php`
 
 ### 用户角色与功能
 
 #### 1. 家庭主人 (Home Owner)
 
-- 注册/登录系统
 - 搜索可用的清洁工服务
-- 收藏喜欢的清洁工
+- 收藏喜欢的清洁服务
 - 查看服务使用历史
 - 管理个人资料
 
@@ -63,9 +61,8 @@
 
 #### 2. 清洁工 (Cleaner)
 
-- 注册/登录系统
 - 创建和管理清洁服务
-- 查看自己服务的浏览量和收藏次数
+- 查看个人信息的浏览量和服务的收藏次数
 - 查看历史服务匹配记录
 - 管理个人资料
 
@@ -75,10 +72,8 @@
 
 #### 3. 平台管理员 (Platform Manager)
 
-- 管理用户账户
 - 管理服务类别
 - 查看平台报告（日报/周报/月报）
-- 系统监控
 
 **主要入口**:
 - 用户管理: `/boundary/admin/search_user_account.php`
@@ -90,8 +85,8 @@
 本系统采用BCE（Boundary-Control-Entity）架构:
 
 - **Boundary**: 用户界面层，处理用户输入和显示
-- **Control**: 控制层，实现业务逻辑
-- **Entity**: 实体层，负责数据持久化
+- **Control**: 控制层，信息传输
+- **Entity**: 实体层，实现业务逻辑和数据持久化
 
 ```
 Cleanplatform/
@@ -110,7 +105,7 @@ Cleanplatform/
    - 默认端口为3307，如果使用3306需修改配置
 
 2. **页面404错误**
-   - 确认项目文件夹已正确复制到htdocs目录
+   - 确认Cleanplatform文件夹已正确复制到htdocs目录
    - 检查Apache配置和重写规则
    - 访问路径是否正确（区分大小写）
 
