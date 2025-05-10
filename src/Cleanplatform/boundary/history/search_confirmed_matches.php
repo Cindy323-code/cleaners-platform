@@ -55,7 +55,7 @@ $detailsController = new ViewConfirmedMatchDetailsController();
         
         <div class="form-actions">
             <button type="submit" class="btn">Search</button>
-            <a href="search_confirmed_matches.php" class="btn btn-secondary">Clear Filters</a>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='search_confirmed_matches.php'">Clear Filters</button>
         </div>
     </form>
 </div>
@@ -86,7 +86,7 @@ $detailsController = new ViewConfirmedMatchDetailsController();
                             <td><?= htmlspecialchars($match['id']) ?></td>
                             <td><?= htmlspecialchars($match['homeowner_name'] ?? 'N/A') ?></td>
                             <td><?= htmlspecialchars($match['service_name'] ?? 'N/A') ?></td>
-                            <td><?= htmlspecialchars($match['match_date']) ?></td>
+                            <td><?= htmlspecialchars($match['service_date']) ?></td>
                             <td>
                                 <span class="status-badge status-<?= strtolower(htmlspecialchars($match['status'])) ?>">
                                     <?= htmlspecialchars($match['status']) ?>
@@ -131,24 +131,6 @@ $detailsController = new ViewConfirmedMatchDetailsController();
 .form-actions {
     display: inline-block;
     vertical-align: bottom;
-}
-.btn {
-    background: #4285f4;
-    border: none;
-    border-radius: 4px;
-    color: white;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 14px;
-    padding: 10px 15px;
-    text-decoration: none;
-}
-.btn-small {
-    padding: 5px 10px;
-    font-size: 12px;
-}
-.btn-secondary {
-    background: #6c757d;
 }
 .notice {
     background-color: #f8f9fa;

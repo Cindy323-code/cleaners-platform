@@ -29,8 +29,8 @@ if (isset($_GET['view_id']) && intval($_GET['view_id']) > 0) {
     $detailView = true;
 }
 
-// 处理搜索请求
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['from']) || isset($_GET['to']) || isset($_GET['type']))) {
+// 处理搜索请求或加载所有历史记录
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $filter = [];
 
     if (!empty($_GET['from'])) {

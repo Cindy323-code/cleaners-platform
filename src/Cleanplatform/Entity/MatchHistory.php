@@ -124,9 +124,11 @@ class MatchHistory
      */
     public function searchConfirmedMatches(int $cleanerId, array $f): array
     {
-        $sql = 'SELECT mh.id, cs.name, cs.type, mh.service_date, mh.price_charged, mh.status
+        $sql = 'SELECT mh.id, cs.name as service_name, cs.type, mh.service_date, mh.price_charged, mh.status,
+                       u.username as homeowner_name
                 FROM match_histories mh
                 JOIN cleaner_services cs ON cs.id = mh.service_id
+                JOIN users u ON u.id = mh.homeowner_id
                 WHERE mh.cleaner_id = ?';
         $types  = 'i';
         $values = [$cleanerId];
@@ -136,16 +138,18 @@ class MatchHistory
             $types .= 's';
             $values[] = $f['service_type'];
         }
-        if (!empty($f['date_from'])) {
+        if (!empty($f['from'])) {
             $sql   .= ' AND mh.service_date >= ?';
             $types .= 's';
-            $values[] = $f['date_from'];
+            $values[] = $f['from'];
         }
-        if (!empty($f['date_to'])) {
+        if (!empty($f['to'])) {
             $sql   .= ' AND mh.service_date <= ?';
             $types .= 's';
-            $values[] = $f['date_to'];
+            $values[] = $f['to'];
         }
+
+        $sql .= ' ORDER BY mh.service_date DESC';
 
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, $types, ...$values);
@@ -153,15 +157,16 @@ class MatchHistory
         mysqli_stmt_bind_result(
             $stmt,
             $id,
-            $name,
+            $service_name,
             $type,
-            $date,
+            $service_date,
             $price,
-            $status
+            $status,
+            $homeowner_name
         );
         $res = [];
         while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('id','name','type','date','price','status');
+            $res[] = compact('id','service_name','type','service_date','price','status','homeowner_name');
         }
         mysqli_stmt_close($stmt);
         return $res;
@@ -225,6 +230,8 @@ class MatchHistory
             $types .= 's';
             $values[] = $f['date_to'];
         }
+
+        $sql .= ' ORDER BY mh.service_date DESC';
 
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, $types, ...$values);

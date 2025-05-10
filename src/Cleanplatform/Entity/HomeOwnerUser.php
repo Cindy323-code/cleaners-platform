@@ -188,7 +188,7 @@ class HomeOwnerUser extends User {
     public function viewCleanerProfile(int $cleanerId): ?array {
         // 查询用户信息和用户资料
         $sql = 'SELECT u.id, u.username, u.status, u.email,
-                p.full_name, p.avatar_url, p.bio, p.availability, p.status as profile_status
+                p.full_name, p.avatar_url, p.bio, p.availability
                 FROM ' . static::$tableName . ' u
                 LEFT JOIN user_profiles p ON u.id = p.user_id
                 WHERE u.id = ? AND u.role = "cleaner" LIMIT 1';

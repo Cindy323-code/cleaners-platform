@@ -162,10 +162,10 @@ $userId = $_SESSION['user']['id'];
                                 <p class="service-id" style="background-color: #f0f8ff; padding: 4px; border-radius: 3px; font-weight: bold;">Service ID: <?= htmlspecialchars($service['id']) ?></p>
                             </div>
                             <div class="service-actions">
-                                <a href="/Cleanplatform/boundary/homeowner/view_cleaner_profile.php?id=<?= htmlspecialchars($service['user_id']) ?>" class="btn btn-small" >View Cleaner</a>
+                                <a href="/Cleanplatform/boundary/homeowner/view_cleaner_profile.php?id=<?= htmlspecialchars($service['user_id']) ?>" class="btn btn-small" style="text-align: center;">View Cleaner</a>
                                 <form action="/Cleanplatform/boundary/shortlist/add_to_shortlist.php" method="post" style="display: inline;">
                                     <input type="hidden" name="service_id" value="<?= $service['id'] ?>">
-                                    <button type="submit" class="btn btn-small">Add to Shortlist</button>
+                                    <button type="submit" class="btn btn-small" style="text-align: center;">Add to Shortlist</button>
                                 </form>
                             </div>
                         </div>
