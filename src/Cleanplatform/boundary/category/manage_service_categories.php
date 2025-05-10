@@ -320,7 +320,7 @@ if ($activeTab === 'view') {
 
                 <div class="button-group">
                     <button type="submit" class="btn">Find Category</button>
-                    <a href="?tab=view" class="btn btn-secondary">Cancel</a>
+                    <a href="?tab=view" class="btn btn-secondary"">Cancel</a>
                 </div>
             </form>
         <?php endif; ?>
@@ -466,6 +466,13 @@ table th {
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
+}
+
+/* Button Group Styling */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
 }
 </style>
 

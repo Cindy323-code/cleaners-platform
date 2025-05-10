@@ -43,14 +43,14 @@ $results = $controller->execute($criteria);
         </div>
         
         <div class="form-actions">
-            <button type="submit" class="btn">Search</button>
-            <a href="search_available_cleaners.php" class="btn btn-secondary">Show All</a>
+            <button type="submit" class="btn btn-small">Search</button>
+            <a href="search_available_cleaners.php" class="btn btn-small">Show All</a>
         </div>
     </form>
 </div>
 
 <div class="card">
-    <div class="card-title"><?= empty($searchTerm) ? 'All Available Cleaners' : 'Search Results' ?></div>
+    <div class="card-title"><?= empty($searchTerm) ? 'All Available Services' : 'Search Results' ?></div>
     
     <?php if (empty($results)): ?>
         <div class="notice">
@@ -133,30 +133,14 @@ $results = $controller->execute($criteria);
 }
 .form-actions {
     margin-top: 15px;
-}
-.btn {
-    background: #4285f4;
-    border: none;
-    border-radius: 4px;
-    color: white;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 14px;
-    padding: 10px 15px;
-    text-decoration: none;
-}
-.btn-small {
-    padding: 5px 10px;
-    font-size: 12px;
-}
-.btn-secondary {
-    background: #6c757d;
+    display: flex;
+    gap: 10px;
 }
 .notice {
     background-color: #f8f9fa;
     padding: 15px;
     border-radius: 4px;
-    border-left: 4px solid #4285f4;
+    border-left: 4px solid #007bff;
     margin: 15px 0;
 }
 .cleaners-grid {
@@ -168,6 +152,12 @@ $results = $controller->execute($criteria);
     border: 1px solid #eee;
     border-radius: 5px;
     overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.cleaner-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 .cleaner-header {
     background: #f8f9fa;
@@ -176,6 +166,7 @@ $results = $controller->execute($criteria);
 }
 .cleaner-header h3 {
     margin: 0 0 5px 0;
+    color: var(--primary-color);
 }
 .cleaner-fullname {
     color: #6c757d;
@@ -192,7 +183,7 @@ $results = $controller->execute($criteria);
     font-size: 14px;
 }
 .service-info {
-    background: #f0f8ff;
+    background: rgba(0, 123, 255, 0.05);
     padding: 10px;
     border-radius: 4px;
     margin-top: 10px;
@@ -200,6 +191,7 @@ $results = $controller->execute($criteria);
 .service-info h4 {
     margin-top: 0;
     margin-bottom: 5px;
+    color: var(--primary-color);
 }
 .service-type, .service-price {
     margin: 5px 0;
@@ -215,6 +207,7 @@ $results = $controller->execute($criteria);
     border-top: 1px solid #eee;
     display: flex;
     justify-content: space-between;
+    gap: 10px;
 }
 .cleaner-actions form {
     display: inline;

@@ -62,7 +62,7 @@ $success = isset($_GET['success']) ? (bool)$_GET['success'] : false;
                     <?php endif; ?>
                 </div>
             </form>
-            <a href="/Cleanplatform/boundary/homeowner/search_available_cleaners.php" class="btn">Find More Cleaners</a>
+            <a href="/Cleanplatform/boundary/homeowner/search_available_cleaners.php" class="btn btn-small">Find More Cleaners</a>
         </div>
 
         <?php if (empty($list)): ?>

@@ -128,8 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && (isset($_GET['from']) || isset($_GET
                 </div>
             </div>
             <div class="button-group">
-                <button type="submit" class="btn">Search</button>
-                <a href="service_usage_history.php" class="btn btn-secondary">Reset</a>
+                <button type="submit" class="btn btn-small">Search</button>
+                <a href="service_usage_history.php" class="btn btn-small btn-secondary">Reset</a>
             </div>
         </form>
     </div>
