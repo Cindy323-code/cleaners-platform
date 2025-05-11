@@ -51,6 +51,21 @@ if ($username) {
         <li>Role: <?=htmlspecialchars($userData['role'])?></li>
         <li>Status: <?=htmlspecialchars($userData['status'])?></li>
         <li>Created At: <?=htmlspecialchars($userData['createdAt'])?></li>
+        <?php if (isset($userData['full_name'])): ?>
+          <li>Full Name: <?=htmlspecialchars($userData['full_name'])?></li>
+        <?php endif; ?>
+        <?php if (isset($userData['avatar_url']) && $userData['avatar_url']): ?>
+          <li>Avatar: <img src="<?=htmlspecialchars($userData['avatar_url'])?>" alt="User Avatar" style="max-width: 100px; max-height: 100px;"></li>
+        <?php endif; ?>
+        <?php if (isset($userData['bio'])): ?>
+          <li>Bio: <?=nl2br(htmlspecialchars($userData['bio']))?></li>
+        <?php endif; ?>
+        <?php if (isset($userData['availability'])): ?>
+          <li>Availability: <?=htmlspecialchars($userData['availability'])?></li>
+        <?php endif; ?>
+        <?php if (isset($userData['profile_updated_at'])): ?>
+          <li>Profile Updated At: <?=htmlspecialchars($userData['profile_updated_at'])?></li>
+        <?php endif; ?>
       </ul>
     <?php elseif ($username): ?>
       <p>No user found.</p>

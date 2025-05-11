@@ -88,25 +88,33 @@ class AdminUser extends User {
 
     /** 查看用户详情 */
     public function viewUser(string $username): ?array {
-        $sql = 'SELECT id,username,email,role,status,created_at'
-             . ' FROM ' . static::$tableName
-             . ' WHERE username = ? LIMIT 1';
+        $sql = 'SELECT u.id, u.username, u.email, u.role, u.status, u.created_at,'
+             . ' up.full_name, up.avatar_url, up.bio, up.availability, up.updated_at as profile_updated_at'
+             . ' FROM ' . static::$tableName . ' u'
+             . ' LEFT JOIN user_profiles up ON u.id = up.user_id'
+             . ' WHERE u.username = ? LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, 's', $username);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result(
             $stmt,
-            $id, $username, $email, $role, $status, $createdAt
+            $id, $db_username, $email, $role, $status, $createdAt,
+            $full_name, $avatar_url, $bio, $availability, $profile_updated_at
         );
         if (mysqli_stmt_fetch($stmt)) {
             mysqli_stmt_close($stmt);
             return [
                 'id' => $id,
-                'user' => $username,
+                'user' => $db_username, // Use $db_username to avoid conflict with param $username
                 'email' => $email,
                 'role' => $role,
                 'status' => $status,
-                'createdAt' => $createdAt
+                'createdAt' => $createdAt,
+                'full_name' => $full_name,
+                'avatar_url' => $avatar_url,
+                'bio' => $bio,
+                'availability' => $availability,
+                'profile_updated_at' => $profile_updated_at
             ];
         }
         mysqli_stmt_close($stmt);
