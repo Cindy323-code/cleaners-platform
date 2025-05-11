@@ -72,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 <!-- Search Form -->
 <div class="search-container">
-    <h3>Find Cleaners</h3>
     <form method="get" action="search_available_cleaners.php">
         <div class="search-row">
             <input type="text" name="keyword" placeholder="Search by name, type or description..."
@@ -172,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         <?php if (!empty($cleaner['sname'])): ?>
                             <div class="service-info">
                                 <h4>Service: <?= htmlspecialchars($cleaner['sname']) ?></h4>
-                                <p class="service-type">Type: <?= htmlspecialchars($cleaner['stype'] ?? 'Not specified') ?></p>
+                                <p class="service-type"><span class="service-type-badge"><?= htmlspecialchars($cleaner['stype'] ?? 'N/A') ?></span></p>
                                 <p class="service-price">Price: $<?= htmlspecialchars($cleaner['price'] ?? '0') ?></p>
                                 <p class="service-id">Service ID: <?= htmlspecialchars($cleaner['service_id'] ?? '') ?></p>
                                 <?php if (!empty($cleaner['description'])): ?>
@@ -268,6 +267,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 .service-price {
     font-weight: bold;
     color: #28a745;
+}
+.service-type-badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 0.85em;
+    font-weight: 600;
+    line-height: 1;
+    color: #007bff;
+    background-color: #e7f3ff;
+    border-radius: 10rem;
+    margin-left: 5px; /* Optional: adds a little space before the badge */
 }
 .cleaner-actions {
     padding: 15px;

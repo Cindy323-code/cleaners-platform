@@ -174,30 +174,32 @@ SELECT id FROM users WHERE role = 'cleaner';
 
 -- Create services for each cleaner
 INSERT INTO cleaner_services (user_id, name, type, price, description)
-SELECT 
-    c.id,
-    CONCAT('Service ', n, ' by Cleaner ', c.id),
-    (SELECT name FROM service_types WHERE id = (c.id % 100) + 1),
-    CASE 
-        WHEN n % 4 = 0 THEN 'Basic'
-        WHEN n % 4 = 1 THEN 'Standard'
-        WHEN n % 4 = 2 THEN 'Premium'
-        ELSE 'Deluxe'
-    END,
-    50 + (n % 150), -- Price between $50 and $200
-    CONCAT('Professional cleaning service offering ', 
-        CASE 
-            WHEN n % 5 = 0 THEN 'thorough deep cleaning'
-            WHEN n % 5 = 1 THEN 'eco-friendly solutions'
-            WHEN n % 5 = 2 THEN 'fast and efficient service'
-            WHEN n % 5 = 3 THEN 'specialized equipment'
+SELECT
+    c.id, -- user_id
+    CONCAT('Service ', numbers.n, ' by Cleaner ', c.id), -- name
+    (SELECT st.name FROM service_types st WHERE st.id = MOD(c.id + numbers.n - 2, 100) + 1), -- type (varied for each service by the same cleaner, using 100 as count of service_types)
+    (50 + MOD((c.id * 5) + numbers.n, 151)), -- price (numeric, varied between 50-200)
+    CONCAT(
+        'Professional cleaning service. Offering ',
+        CASE
+            WHEN numbers.n % 5 = 0 THEN 'thorough deep cleaning'
+            WHEN numbers.n % 5 = 1 THEN 'eco-friendly solutions'
+            WHEN numbers.n % 5 = 2 THEN 'fast and efficient service'
+            WHEN numbers.n % 5 = 3 THEN 'specialized equipment'
             ELSE 'customized cleaning packages'
-        END, 
-        ' for your needs.')
-FROM 
+        END,
+        '. Service tier: ', -- Incorporated old type (Basic, Standard, etc.) here
+        CASE
+            WHEN numbers.n % 4 = 0 THEN 'Basic'
+            WHEN numbers.n % 4 = 1 THEN 'Standard'
+            WHEN numbers.n % 4 = 2 THEN 'Premium'
+            ELSE 'Deluxe'
+        END
+    ) -- description
+FROM
     cleaner_ids c,
-    (SELECT 1 AS n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) numbers
-ORDER BY c.id, n
+    (SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5) numbers -- numbers.n from 1 to 5
+ORDER BY c.id, numbers.n
 LIMIT 100;
 
 -- ----------------------------------------------------------
