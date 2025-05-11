@@ -119,16 +119,18 @@ class MatchHistory
     /**
      * 按服务类型 & 日期区间搜索 Cleaner 的确认匹配历史
      * @param int   $cleanerId
-     * @param array $f ['service_type','date_from','date_to']
+     * @param array $f ['service_type','date_from','date_to', 'status', 'price_min', 'price_max', 'sort_by', 'sort_dir']
      * @return array
      */
     public function searchConfirmedMatches(int $cleanerId, array $f): array
     {
-        $sql = 'SELECT mh.id, cs.name as service_name, cs.type, mh.service_date, mh.price_charged, mh.status,
-                       u.username as homeowner_name
+        $sql = 'SELECT mh.id, cs.name as service_name, cs.type, cs.description, mh.service_date, mh.price_charged, mh.status,
+                       u.id as homeowner_id, u.username as homeowner_username, 
+                       COALESCE(up.full_name, u.username) as homeowner_name, up.avatar_url as homeowner_avatar_url
                 FROM match_histories mh
                 JOIN cleaner_services cs ON cs.id = mh.service_id
                 JOIN users u ON u.id = mh.homeowner_id
+                LEFT JOIN user_profiles up ON up.user_id = u.id
                 WHERE mh.cleaner_id = ?';
         $types  = 'i';
         $values = [$cleanerId];
@@ -138,18 +140,74 @@ class MatchHistory
             $types .= 's';
             $values[] = $f['service_type'];
         }
-        if (!empty($f['from'])) {
+        if (!empty($f['date_from'])) {
             $sql   .= ' AND mh.service_date >= ?';
             $types .= 's';
-            $values[] = $f['from'];
+            $values[] = $f['date_from'];
         }
-        if (!empty($f['to'])) {
+        if (!empty($f['date_to'])) {
             $sql   .= ' AND mh.service_date <= ?';
             $types .= 's';
-            $values[] = $f['to'];
+            $values[] = $f['date_to'];
+        }
+        
+        // Add status filter
+        if (!empty($f['status'])) {
+            $sql   .= ' AND mh.status = ?';
+            $types .= 's';
+            $values[] = $f['status'];
+        }
+        
+        // Add price range filter
+        if (!empty($f['price_min'])) {
+            $sql   .= ' AND mh.price_charged >= ?';
+            $types .= 'd';
+            $values[] = $f['price_min'];
+        }
+        if (!empty($f['price_max'])) {
+            $sql   .= ' AND mh.price_charged <= ?';
+            $types .= 'd';
+            $values[] = $f['price_max'];
+        }
+        
+        // Add homeowner name/username filter
+        if (!empty($f['homeowner'])) {
+            $sql   .= ' AND (u.username LIKE ? OR up.full_name LIKE ?)';
+            $types .= 'ss';
+            $like = '%' . $f['homeowner'] . '%';
+            $values[] = $like;
+            $values[] = $like;
         }
 
-        $sql .= ' ORDER BY mh.service_date DESC';
+        // Add sorting
+        if (!empty($f['sort_by'])) {
+            $sortDirection = (!empty($f['sort_dir']) && strtolower($f['sort_dir']) === 'desc') ? 'DESC' : 'ASC';
+            $sortColumn = '';
+            
+            switch($f['sort_by']) {
+                case 'date':
+                    $sortColumn = 'mh.service_date';
+                    break;
+                case 'price':
+                    $sortColumn = 'mh.price_charged';
+                    break;
+                case 'type':
+                    $sortColumn = 'cs.type';
+                    break;
+                case 'status':
+                    $sortColumn = 'mh.status';
+                    break;
+                case 'homeowner':
+                    $sortColumn = 'homeowner_name';
+                    break;
+                default:
+                    $sortColumn = 'mh.service_date';
+            }
+            
+            $sql .= ' ORDER BY ' . $sortColumn . ' ' . $sortDirection;
+        } else {
+            $sql .= ' ORDER BY mh.service_date DESC';
+        }
 
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, $types, ...$values);
@@ -159,14 +217,19 @@ class MatchHistory
             $id,
             $service_name,
             $type,
+            $description,
             $service_date,
-            $price,
+            $price_charged,
             $status,
-            $homeowner_name
+            $homeowner_id,
+            $homeowner_username,
+            $homeowner_name,
+            $homeowner_avatar_url
         );
         $res = [];
         while (mysqli_stmt_fetch($stmt)) {
-            $res[] = compact('id','service_name','type','service_date','price','status','homeowner_name');
+            $res[] = compact('id', 'service_name', 'type', 'description', 'service_date', 'price_charged', 'status',
+                              'homeowner_id', 'homeowner_username', 'homeowner_name', 'homeowner_avatar_url');
         }
         mysqli_stmt_close($stmt);
         return $res;
@@ -177,27 +240,37 @@ class MatchHistory
      */
     public function getConfirmedMatchDetails(int $matchId): ?array
     {
-        $sql = 'SELECT mh.id, cs.name, cs.type, mh.service_date,
-                       mh.price_charged, mh.status, mh.feedback
+        $sql = 'SELECT mh.id, cs.name as service_name, cs.type, cs.description, mh.service_date,
+                       mh.price_charged, mh.status, mh.feedback,
+                       u.id as homeowner_id, u.username as homeowner_username,
+                       COALESCE(up.full_name, u.username) as homeowner_name, up.avatar_url as homeowner_avatar_url
                 FROM match_histories mh
                 JOIN cleaner_services cs ON cs.id = mh.service_id
-                WHERE mh.id = ? LIMIT 1';
+                JOIN users u ON u.id = mh.homeowner_id
+                LEFT JOIN user_profiles up ON up.user_id = u.id
+                WHERE mh.id = ? AND mh.cleaner_id = ? LIMIT 1';
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'i', $matchId);
+        mysqli_stmt_bind_param($stmt, 'ii', $matchId, $_SESSION['user']['id']);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result(
             $stmt,
             $id,
-            $name,
+            $service_name,
             $type,
-            $date,
-            $price,
+            $description,
+            $service_date,
+            $price_charged,
             $status,
-            $feedback
+            $feedback,
+            $homeowner_id,
+            $homeowner_username,
+            $homeowner_name,
+            $homeowner_avatar_url
         );
         $result = null;
         if (mysqli_stmt_fetch($stmt)) {
-            $result = compact('id','name','type','date','price','status','feedback');
+            $result = compact('id', 'service_name', 'type', 'description', 'service_date', 'price_charged', 'status', 'feedback',
+                              'homeowner_id', 'homeowner_username', 'homeowner_name', 'homeowner_avatar_url');
         }
         mysqli_stmt_close($stmt);
         return $result;
@@ -205,6 +278,9 @@ class MatchHistory
 
     /**
      * 按服务类型 & 日期区间搜索 Homeowner 的使用历史
+     * @param int $homeownerId
+     * @param array $f ['service_type','date_from','date_to', 'status', 'price_min', 'price_max', 'cleaner', 'sort_by', 'sort_dir']
+     * @return array
      */
     public function searchUsageHistory(int $homeownerId, array $f): array
     {
@@ -234,8 +310,74 @@ class MatchHistory
             $types .= 's';
             $values[] = $f['date_to'];
         }
+        
+        // Add status filter
+        if (!empty($f['status'])) {
+            $sql   .= ' AND mh.status = ?';
+            $types .= 's';
+            $values[] = $f['status'];
+        }
+        
+        // Add price range filter
+        if (!empty($f['price_min'])) {
+            $sql   .= ' AND mh.price_charged >= ?';
+            $types .= 'd';
+            $values[] = $f['price_min'];
+        }
+        if (!empty($f['price_max'])) {
+            $sql   .= ' AND mh.price_charged <= ?';
+            $types .= 'd';
+            $values[] = $f['price_max'];
+        }
+        
+        // Add cleaner name filter
+        if (!empty($f['cleaner'])) {
+            $sql   .= ' AND (u.username LIKE ? OR up.full_name LIKE ?)';
+            $types .= 'ss';
+            $like = '%' . $f['cleaner'] . '%';
+            $values[] = $like;
+            $values[] = $like;
+        }
+        
+        // Add service name filter
+        if (!empty($f['service_name'])) {
+            $sql   .= ' AND cs.name LIKE ?';
+            $types .= 's';
+            $values[] = '%' . $f['service_name'] . '%';
+        }
 
-        $sql .= ' ORDER BY mh.service_date DESC';
+        // Add sorting
+        if (!empty($f['sort_by'])) {
+            $sortDirection = (!empty($f['sort_dir']) && strtolower($f['sort_dir']) === 'desc') ? 'DESC' : 'ASC';
+            $sortColumn = '';
+            
+            switch($f['sort_by']) {
+                case 'date':
+                    $sortColumn = 'mh.service_date';
+                    break;
+                case 'price':
+                    $sortColumn = 'mh.price_charged';
+                    break;
+                case 'type':
+                    $sortColumn = 'cs.type';
+                    break;
+                case 'status':
+                    $sortColumn = 'mh.status';
+                    break;
+                case 'cleaner':
+                    $sortColumn = 'cleaner_name';
+                    break;
+                case 'service':
+                    $sortColumn = 'cs.name';
+                    break;
+                default:
+                    $sortColumn = 'mh.service_date';
+            }
+            
+            $sql .= ' ORDER BY ' . $sortColumn . ' ' . $sortDirection;
+        } else {
+            $sql .= ' ORDER BY mh.service_date DESC';
+        }
 
         $stmt = mysqli_prepare($this->conn, $sql);
         mysqli_stmt_bind_param($stmt, $types, ...$values);

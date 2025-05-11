@@ -22,6 +22,7 @@ if (!$isLoginPage):
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cleaning Platform</title>
   <link rel="stylesheet" href="/Cleanplatform/public/css/style.css">
+  <link rel="stylesheet" href="/Cleanplatform/public/css/filter.css">
 </head>
 <body>
 <div class="container">
@@ -61,7 +62,7 @@ if (!$isLoginPage):
       <a href="/Cleanplatform/boundary/history/service_usage_history.php">History</a>
       <a href="/Cleanplatform/boundary/profile/view_user_profile.php">My Profile</a>
     <?php elseif ($userRole === 'manager'): ?>
-      <a href="/Cleanplatform/boundary/category/manage_service_categories.php">Manage Categories</a>
+      <a href="/Cleanplatform/boundary/category/manage_service_types.php">Manage Types</a>
       <a href="/Cleanplatform/boundary/report/manage_reports.php">Reports</a>
     <?php endif; ?>
   </nav>

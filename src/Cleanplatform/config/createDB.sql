@@ -36,29 +36,17 @@ CREATE TABLE user_profiles (
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------
---  3.  Service Categories (managed by platform manager)
--- ----------------------------------------------------------
-CREATE TABLE service_categories (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(100) NOT NULL UNIQUE,
-    description TEXT,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
--- ----------------------------------------------------------
 --  4.  Cleaner Services
 -- ----------------------------------------------------------
 CREATE TABLE cleaner_services (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     user_id       INT NOT NULL,
-    category_id   INT,
     name          VARCHAR(100) NOT NULL,
-    type          VARCHAR(100),
+    type          VARCHAR(100) NOT NULL,
     price         DECIMAL(10,2) NOT NULL,
     description   TEXT,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id)     REFERENCES users(id)   ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES service_categories(id) ON DELETE SET NULL,
     FULLTEXT KEY ft_service_search (name, description)
 ) ENGINE=InnoDB;
 

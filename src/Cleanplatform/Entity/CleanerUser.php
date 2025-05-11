@@ -128,13 +128,71 @@ class CleanerUser extends User {
     }
 
     /** 搜索服务 */
-    public function searchServices(int $userId, string $keyword): array {
+    public function searchServices(int $userId, string $keyword, array $filters = []): array {
         $like = "%$keyword%";
         $sql = 'SELECT id,name,type,price,description'
              . ' FROM cleaner_services'
              . ' WHERE user_id = ? AND (name LIKE ? OR type LIKE ? OR description LIKE ?)';
+        
+        $types = 'isss';
+        $params = [$userId, $like, $like, $like];
+        
+        // Add price range filter
+        if (!empty($filters['price_min'])) {
+            $sql .= ' AND price >= ?';
+            $types .= 'd';
+            $params[] = $filters['price_min'];
+        }
+        
+        if (!empty($filters['price_max'])) {
+            $sql .= ' AND price <= ?';
+            $types .= 'd';
+            $params[] = $filters['price_max'];
+        }
+        
+        // Add service type filter
+        if (!empty($filters['type'])) {
+            $sql .= ' AND type = ?';
+            $types .= 's';
+            $params[] = $filters['type'];
+        }
+        
+        // Add date filter
+        if (!empty($filters['created_after'])) {
+            $sql .= ' AND created_at >= ?';
+            $types .= 's';
+            $params[] = $filters['created_after'];
+        }
+        
+        // Add sorting
+        if (!empty($filters['sort_by'])) {
+            $sortDirection = (!empty($filters['sort_dir']) && strtolower($filters['sort_dir']) === 'desc') ? 'DESC' : 'ASC';
+            $sortColumn = '';
+            
+            switch($filters['sort_by']) {
+                case 'price':
+                    $sortColumn = 'price';
+                    break;
+                case 'name':
+                    $sortColumn = 'name';
+                    break;
+                case 'date':
+                    $sortColumn = 'created_at';
+                    break;
+                case 'type':
+                    $sortColumn = 'type';
+                    break;
+                default:
+                    $sortColumn = 'created_at';
+            }
+            
+            $sql .= ' ORDER BY ' . $sortColumn . ' ' . $sortDirection;
+        } else {
+            $sql .= ' ORDER BY created_at DESC';
+        }
+        
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'isss', $userId, $like, $like, $like);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt,$id,$name,$type,$price,$description);
         $res = [];
@@ -201,10 +259,11 @@ class CleanerUser extends User {
      * 执行搜索服务操作，对应SearchCleaningServiceController
      * @param int $userId
      * @param string $keyword
+     * @param array $filters Optional filters for price range, type, date, sorting
      * @return array
      */
-    public function executeSearch(int $userId, string $keyword): array
+    public function executeSearch(int $userId, string $keyword, array $filters = []): array
     {
-        return $this->searchServices($userId, $keyword);
+        return $this->searchServices($userId, $keyword, $filters);
     }
 }

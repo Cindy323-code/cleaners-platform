@@ -242,39 +242,35 @@ $userId = $_SESSION['user']['id'];
 
 <?php elseif ($role === 'manager'): ?>
     <div class="module-grid">
-        <!-- Category Management Module -->
+        <!-- Service Types Module -->
         <div class="module">
             <div class="module-header">
-                <h3 class="module-title">Category Management</h3>
+                <h3 class="module-title">Service Types</h3>
             </div>
             <div class="module-content">
-                <p>Create and manage service categories.</p>
+                <p>View and analyze service types used in the system.</p>
                 <div class="module-actions">
-                <a href="/Cleanplatform/boundary/category/manage_service_categories.php?tab=create" class="btn btn-small">Create Category</a>
+                <?php
+                // Retrieve and display the most common service types
+                require_once __DIR__ . '/../config/Database.php';
+                $db = \Config\Database::getConnection();
+                $sql = 'SELECT type, COUNT(*) as count FROM cleaner_services GROUP BY type ORDER BY count DESC LIMIT 5';
+                $result = mysqli_query($db, $sql);
+                if ($result && mysqli_num_rows($result) > 0) {
+                    echo '<div class="type-list">';
+                    echo '<p>Most common types:</p>';
+                    echo '<ul style="margin-top:5px;padding-left:20px;">';
+                    while ($type = mysqli_fetch_assoc($result)) {
+                        echo '<li>' . htmlspecialchars($type['type']) . ' (' . $type['count'] . ')</li>';
+                    }
+                    echo '</ul>';
+                    echo '</div>';
+                }
+                ?>
                 </div>
-
             </div>
             <div class="module-footer">
-                <a href="/Cleanplatform/boundary/category/manage_service_categories.php" class="btn btn-small">Manage Categories</a>
-            </div>
-        </div>
-
-        <!-- Search Categories Module -->
-        <div class="module">
-            <div class="module-header">
-                <h3 class="module-title">Search Categories</h3>
-            </div>
-            <div class="module-content">
-                <p>Search for service categories by name or description.</p>
-                <form action="/Cleanplatform/boundary/category/manage_service_categories.php" method="get" class="module-actions">
-                    <input type="hidden" name="tab" value="search">
-                    <div class="form-group">
-                        <input type="text" name="q" placeholder="Enter category name...">
-                    </div>
-                    <div class="module-footer">
-                    <button type="submit" class="btn btn-small">Search Categories</button>
-                    </div>
-                </form>
+                <a href="/Cleanplatform/boundary/category/manage_service_types.php" class="btn btn-small">Manage Types</a>
             </div>
         </div>
 

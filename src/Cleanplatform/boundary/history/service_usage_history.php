@@ -33,6 +33,7 @@ if (isset($_GET['view_id']) && intval($_GET['view_id']) > 0) {
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $filter = [];
 
+    // Basic filters
     if (!empty($_GET['from'])) {
         $filter['date_from'] = $_GET['from'];
     }
@@ -43,6 +44,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     if (!empty($_GET['type'])) {
         $filter['service_type'] = $_GET['type'];
+    }
+    
+    // Enhanced filters
+    if (!empty($_GET['status'])) {
+        $filter['status'] = $_GET['status'];
+    }
+    
+    if (!empty($_GET['price_min'])) {
+        $filter['price_min'] = $_GET['price_min'];
+    }
+    
+    if (!empty($_GET['price_max'])) {
+        $filter['price_max'] = $_GET['price_max'];
+    }
+    
+    if (!empty($_GET['cleaner'])) {
+        $filter['cleaner'] = $_GET['cleaner'];
+    }
+    
+    if (!empty($_GET['service_name'])) {
+        $filter['service_name'] = $_GET['service_name'];
+    }
+    
+    // Sorting options
+    if (!empty($_GET['sort_by'])) {
+        $filter['sort_by'] = $_GET['sort_by'];
+    }
+    
+    if (!empty($_GET['sort_dir'])) {
+        $filter['sort_dir'] = $_GET['sort_dir'];
     }
 
     $results = (new SearchServiceUsageHistoryController())->execute($homeownerId, $filter);
@@ -140,10 +171,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     <select id="type" name="type">
                         <option value="">All Types</option>
                         <?php
-                        // Get all service types
+                        // Get only service types from homeowner's history
                         $db = \Config\Database::getConnection();
-                        $typesSql = "SELECT DISTINCT type FROM cleaner_services ORDER BY type";
-                        $typesResult = mysqli_query($db, $typesSql);
+                        $typesSql = "SELECT DISTINCT cs.type 
+                                     FROM match_histories mh 
+                                     JOIN cleaner_services cs ON cs.id = mh.service_id 
+                                     WHERE mh.homeowner_id = ? 
+                                     ORDER BY cs.type";
+                        $stmt = mysqli_prepare($db, $typesSql);
+                        mysqli_stmt_bind_param($stmt, 'i', $homeownerId);
+                        mysqli_stmt_execute($stmt);
+                        $typesResult = mysqli_stmt_get_result($stmt);
+                        
                         while ($type = mysqli_fetch_assoc($typesResult)) {
                             $selected = (isset($_GET['type']) && $_GET['type'] === $type['type']) ? 'selected' : '';
                             echo '<option value="' . htmlspecialchars($type['type']) . '" ' . $selected . '>' . htmlspecialchars($type['type']) . '</option>';
@@ -152,6 +191,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     </select>
                 </div>
             </div>
+            
+            <!-- Enhanced filters -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="status">Status:</label>
+                    <select id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="confirmed" <?= (isset($_GET['status']) && $_GET['status'] === 'confirmed') ? 'selected' : '' ?>>Confirmed</option>
+                        <option value="completed" <?= (isset($_GET['status']) && $_GET['status'] === 'completed') ? 'selected' : '' ?>>Completed</option>
+                        <option value="cancelled" <?= (isset($_GET['status']) && $_GET['status'] === 'cancelled') ? 'selected' : '' ?>>Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="price_min">Min Price:</label>
+                    <input type="number" id="price_min" name="price_min" min="0" step="0.01" 
+                           value="<?= isset($_GET['price_min']) ? htmlspecialchars($_GET['price_min']) : '' ?>">
+                </div>
+                <div class="form-group">
+                    <label for="price_max">Max Price:</label>
+                    <input type="number" id="price_max" name="price_max" min="0" step="0.01"
+                           value="<?= isset($_GET['price_max']) ? htmlspecialchars($_GET['price_max']) : '' ?>">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cleaner">Cleaner:</label>
+                    <input type="text" id="cleaner" name="cleaner" 
+                           value="<?= isset($_GET['cleaner']) ? htmlspecialchars($_GET['cleaner']) : '' ?>" 
+                           placeholder="Enter cleaner name...">
+                </div>
+                <div class="form-group">
+                    <label for="service_name">Service Name:</label>
+                    <input type="text" id="service_name" name="service_name" 
+                           value="<?= isset($_GET['service_name']) ? htmlspecialchars($_GET['service_name']) : '' ?>" 
+                           placeholder="Enter service name...">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sort_by">Sort By:</label>
+                    <select id="sort_by" name="sort_by">
+                        <option value="">Default (Date)</option>
+                        <option value="date" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'date') ? 'selected' : '' ?>>Date</option>
+                        <option value="price" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'price') ? 'selected' : '' ?>>Price</option>
+                        <option value="type" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'type') ? 'selected' : '' ?>>Type</option>
+                        <option value="status" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'status') ? 'selected' : '' ?>>Status</option>
+                        <option value="cleaner" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'cleaner') ? 'selected' : '' ?>>Cleaner</option>
+                        <option value="service" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'service') ? 'selected' : '' ?>>Service Name</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sort_dir">Sort Direction:</label>
+                    <select id="sort_dir" name="sort_dir">
+                        <option value="asc" <?= (isset($_GET['sort_dir']) && $_GET['sort_dir'] === 'asc') ? 'selected' : '' ?>>Ascending</option>
+                        <option value="desc" <?= (isset($_GET['sort_dir']) && $_GET['sort_dir'] === 'desc') ? 'selected' : '' ?>>Descending</option>
+                    </select>
+                </div>
+            </div>
+            
             <div class="button-group">
                 <button type="submit" class="btn btn-small">Search</button>
                 <a href="service_usage_history.php" class="btn btn-small btn-secondary">Reset</a>

@@ -21,11 +21,12 @@ class HomeOwnerUser extends User {
      * 执行搜索收藏操作，对应SearchShortlistController
      * @param int $userId
      * @param string $keyword
+     * @param array $filters Optional filters for price range, type, sorting
      * @return array
      */
-    public function executeSearchShortlist(int $userId, string $keyword): array
+    public function executeSearchShortlist(int $userId, string $keyword, array $filters = []): array
     {
-        return $this->searchShortlist($userId, $keyword);
+        return $this->searchShortlist($userId, $keyword, $filters);
     }
     
     /**
@@ -147,15 +148,57 @@ class HomeOwnerUser extends User {
             $sql .= ' AND (s.name LIKE ? OR s.type LIKE ? OR s.description LIKE ? OR u.username LIKE ? OR p.full_name LIKE ?)';
             $types .= 'sssss';
             $params = array_merge($params, [$keyword, $keyword, $keyword, $keyword, $keyword]);
-        } elseif (!empty($criteria['service_type'])) {
-            // 保留原有的service_type搜索功能
+        } 
+        
+        if (!empty($criteria['service_type'])) {
             $sql .= ' AND s.type = ?';
             $types .= 's';
             $params[] = $criteria['service_type'];
         }
+        
+        // Add price range filter
+        if (!empty($criteria['price_min'])) {
+            $sql .= ' AND s.price >= ?';
+            $types .= 'd';
+            $params[] = $criteria['price_min'];
+        }
+        
+        if (!empty($criteria['price_max'])) {
+            $sql .= ' AND s.price <= ?';
+            $types .= 'd';
+            $params[] = $criteria['price_max'];
+        }
+        
+        // Add availability filter if provided
+        if (!empty($criteria['availability'])) {
+            $sql .= ' AND p.availability LIKE ?';
+            $types .= 's';
+            $params[] = '%' . $criteria['availability'] . '%';
+        }
 
         // 添加排序
-        $sql .= ' ORDER BY s.price ASC';
+        if (!empty($criteria['sort_by'])) {
+            $sortDirection = (!empty($criteria['sort_dir']) && strtolower($criteria['sort_dir']) === 'desc') ? 'DESC' : 'ASC';
+            $sortColumn = '';
+            
+            switch($criteria['sort_by']) {
+                case 'price':
+                    $sortColumn = 's.price';
+                    break;
+                case 'name':
+                    $sortColumn = 's.name';
+                    break;
+                case 'type':
+                    $sortColumn = 's.type';
+                    break;
+                default:
+                    $sortColumn = 's.price';
+            }
+            
+            $sql .= ' ORDER BY ' . $sortColumn . ' ' . $sortDirection;
+        } else {
+            $sql .= ' ORDER BY s.price ASC';
+        }
 
         // 准备和执行查询
         $stmt = mysqli_prepare($this->conn, $sql);
@@ -360,7 +403,14 @@ class HomeOwnerUser extends User {
         return $res;
     }
     
-    public function searchShortlist(int $userId, string $keyword): array {
+    /**
+     * 搜索收藏列表
+     * @param int $userId
+     * @param string $keyword
+     * @param array $filters Optional filters for price range, type, sorting
+     * @return array
+     */
+    public function searchShortlist(int $userId, string $keyword, array $filters = []): array {
         $like = '%' . $keyword . '%';
         $sql = 'SELECT s.id as shortlist_id, cs.id as service_id, cs.name, cs.type, cs.price,
                 cs.description, u.id as cleaner_id, u.username as cleaner_username, 
@@ -370,10 +420,60 @@ class HomeOwnerUser extends User {
                 JOIN ' . static::$tableName . ' u ON cs.user_id = u.id
                 LEFT JOIN user_profiles p ON u.id = p.user_id
                 WHERE s.user_id = ? AND u.role = "cleaner" AND 
-                (cs.name LIKE ? OR cs.type LIKE ? OR cs.description LIKE ? OR u.username LIKE ? OR p.full_name LIKE ?)
-                ORDER BY s.added_at DESC';
+                (cs.name LIKE ? OR cs.type LIKE ? OR cs.description LIKE ? OR u.username LIKE ? OR p.full_name LIKE ?)';
+        
+        $params = [$userId, $like, $like, $like, $like, $like];
+        $types = 'isssss';
+        
+        // Add price range filter
+        if (!empty($filters['price_min'])) {
+            $sql .= ' AND cs.price >= ?';
+            $types .= 'd';
+            $params[] = $filters['price_min'];
+        }
+        
+        if (!empty($filters['price_max'])) {
+            $sql .= ' AND cs.price <= ?';
+            $types .= 'd';
+            $params[] = $filters['price_max'];
+        }
+        
+        // Add service type filter
+        if (!empty($filters['type'])) {
+            $sql .= ' AND cs.type = ?';
+            $types .= 's';
+            $params[] = $filters['type'];
+        }
+        
+        // Add sorting
+        if (!empty($filters['sort_by'])) {
+            $sortDirection = (!empty($filters['sort_dir']) && strtolower($filters['sort_dir']) === 'desc') ? 'DESC' : 'ASC';
+            $sortColumn = '';
+            
+            switch($filters['sort_by']) {
+                case 'price':
+                    $sortColumn = 'cs.price';
+                    break;
+                case 'name':
+                    $sortColumn = 'cs.name';
+                    break;
+                case 'type':
+                    $sortColumn = 'cs.type';
+                    break;
+                case 'date':
+                    $sortColumn = 's.added_at';
+                    break;
+                default:
+                    $sortColumn = 's.added_at';
+            }
+            
+            $sql .= ' ORDER BY ' . $sortColumn . ' ' . $sortDirection;
+        } else {
+            $sql .= ' ORDER BY s.added_at DESC';
+        }
+        
         $stmt = mysqli_prepare($this->conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'isssss', $userId, $like, $like, $like, $like, $like);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         

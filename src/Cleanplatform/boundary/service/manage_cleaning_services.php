@@ -341,38 +341,37 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
 <?php if ($activeTab === 'create'): ?>
     <div class="card">
         <div class="card-title">Create New Service</div>
-
-        <form method="post" action="manage_cleaning_services.php" class="service-form">
+        <form method="post" class="form">
             <input type="hidden" name="action" value="create">
-
+            
             <div class="form-group">
-                <label for="name">Service Name: <span class="required">*</span></label>
-                <input type="text" id="name" name="name" placeholder="e.g., Deep Cleaning" required>
+                <label for="name">Service Name</label>
+                <input type="text" id="name" name="name" required>
             </div>
-
+            
             <div class="form-group">
-                <label for="type">Service Type: <span class="required">*</span></label>
+                <label for="type">Service Type</label>
                 <select id="type" name="type" required>
-                    <option value="">-- Select a Service Category --</option>
+                    <option value="">-- Select a Service Type --</option>
                     <?php foreach ($categoriesList as $category): ?>
-                        <option value="<?= htmlspecialchars($category['name']) ?>">
-                            <?= htmlspecialchars($category['name']) ?>
-                        </option>
+                    <option value="<?= htmlspecialchars($category['name']) ?>">
+                        <?= htmlspecialchars($category['name']) ?>
+                    </option>
                     <?php endforeach; ?>
                 </select>
             </div>
-
+            
             <div class="form-group">
-                <label for="price">Price ($): <span class="required">*</span></label>
-                <input type="number" id="price" name="price" placeholder="e.g., 99.99" step="0.01" min="0" required>
+                <label for="price">Price</label>
+                <input type="number" id="price" name="price" min="0" step="0.01" required>
             </div>
-
+            
             <div class="form-group">
-                <label for="description">Description:</label>
-                <textarea id="description" name="description" placeholder="Describe your service..." rows="4"></textarea>
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="4"></textarea>
             </div>
-
-            <div class="button-group">
+            
+            <div class="form-actions">
                 <button type="submit" class="btn">Create Service</button>
                 <a href="?tab=view" class="btn btn-secondary">Cancel</a>
             </div>
@@ -384,73 +383,71 @@ if ($activeTab === 'update' && isset($_GET['id']) && !$serviceToEdit) {
 <?php if ($activeTab === 'update'): ?>
     <div class="card">
         <div class="card-title">Update Service</div>
-
-        <?php if (empty($servicesList)): ?>
-            <div class="empty-state">
-                <div class="empty-icon">🧹</div>
-                <h3>No Services Found</h3>
-                <p>You haven't created any cleaning services yet.</p>
-                <a href="?tab=create" class="btn">Create New Service</a>
+        
+        <?php if (!$serviceToEdit): ?>
+            <div class="notice">
+                <p>Select a service to edit:</p>
+                <form method="post" class="form">
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="tab" value="update">
+                    
+                    <div class="form-group">
+                        <label for="service_select">Select Service</label>
+                        <select id="service_select" name="service_id" required>
+                            <option value="">-- Select a Service --</option>
+                            <?php foreach ($servicesList as $service): ?>
+                                <option value="<?= $service['id'] ?>">
+                                    <?= htmlspecialchars($service['name']) ?> - $<?= htmlspecialchars($service['price']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Select Service</button>
+                        <a href="?tab=view" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
             </div>
-        <?php elseif ($serviceToEdit): ?>
-            <form method="post" action="manage_cleaning_services.php" class="service-form">
+        <?php else: ?>
+            <form method="post" class="form">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="service_id" value="<?= $serviceToEdit['id'] ?>">
-
+                
                 <div class="form-group">
-                    <label for="name">Service Name:</label>
-                    <input type="text" id="name" name="name" value="<?= htmlspecialchars($serviceToEdit['name']) ?>" placeholder="e.g., Deep Cleaning">
+                    <label for="name">Service Name</label>
+                    <input type="text" id="name" name="name" value="<?= htmlspecialchars($serviceToEdit['name']) ?>">
                 </div>
-
+                
                 <div class="form-group">
-                    <label for="type">Service Type:</label>
+                    <label for="type">Service Type</label>
                     <select id="type" name="type">
-                        <option value="">-- Select a Service Category --</option>
+                        <option value="">-- Select a Service Type --</option>
                         <?php foreach ($categoriesList as $category): ?>
-                            <option value="<?= htmlspecialchars($category['name']) ?>" <?= $serviceToEdit['type'] === $category['name'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($category['name']) ?>
-                            </option>
+                        <option value="<?= htmlspecialchars($category['name']) ?>" <?= $serviceToEdit['type'] === $category['name'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($category['name']) ?>
+                        </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-
+                
                 <div class="form-group">
-                    <label for="price">Price ($):</label>
-                    <input type="number" id="price" name="price" value="<?= htmlspecialchars($serviceToEdit['price']) ?>" step="0.01" min="0">
+                    <label for="price">Price</label>
+                    <input type="number" id="price" name="price" min="0" step="0.01" value="<?= htmlspecialchars($serviceToEdit['price']) ?>">
                 </div>
-
+                
                 <div class="form-group">
-                    <label for="description">Description:</label>
-                    <textarea id="description" name="description" placeholder="Describe your service..." rows="4"><?= htmlspecialchars($serviceToEdit['description']) ?></textarea>
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4"><?= htmlspecialchars($serviceToEdit['description']) ?></textarea>
                 </div>
-
-                <div class="button-group">
+                
+                <div class="form-actions">
                     <button type="submit" class="btn">Update Service</button>
                     <?php if (isset($searchQuery)): ?>
-                        <a href="?tab=search&q=<?= htmlspecialchars($searchQuery) ?>" class="btn btn-secondary">Back to Search</a>
+                        <a href="?tab=search&q=<?= urlencode($searchQuery) ?>" class="btn btn-secondary">Cancel</a>
                     <?php else: ?>
                         <a href="?tab=view" class="btn btn-secondary">Cancel</a>
                     <?php endif; ?>
-                </div>
-            </form>
-        <?php else: ?>
-            <form method="get" class="service-selector">
-                <input type="hidden" name="tab" value="update">
-
-                <div class="form-group">
-                    <label for="service-select">Select Service to Update:</label>
-                    <select id="service-select" name="id" onchange="this.form.submit()">
-                        <option value="">-- Select a Service --</option>
-                        <?php foreach ($servicesList as $service): ?>
-                            <option value="<?= $service['id'] ?>">
-                                <?= htmlspecialchars($service['name']) ?> (<?= htmlspecialchars($service['type']) ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="button-group">
-                    <a href="?tab=view" class="btn btn-secondary">Back to Services</a>
                 </div>
             </form>
         <?php endif; ?>

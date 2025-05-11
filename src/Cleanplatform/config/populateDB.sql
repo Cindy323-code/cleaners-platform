@@ -13,7 +13,6 @@ DELETE FROM service_stats;
 DELETE FROM match_histories;
 DELETE FROM shortlists;
 DELETE FROM cleaner_services;
-DELETE FROM service_categories;
 DELETE FROM user_profiles;
 DELETE FROM users;
 
@@ -133,26 +132,32 @@ WHERE
     role = 'homeowner';
 
 -- ----------------------------------------------------------
---  3. Populate Service Categories
+--  3. Define common service types for population
 -- ----------------------------------------------------------
 
-INSERT INTO service_categories (name, description) VALUES
-('Residential Cleaning', 'Regular cleaning services for homes, apartments, and residential properties'),
-('Commercial Cleaning', 'Cleaning services for offices, retail spaces, and commercial buildings'),
-('Deep Cleaning', 'Thorough, detail-oriented cleaning for properties needing extra attention'),
-('Post-Construction Cleaning', 'Specialized cleaning after construction or renovation projects'),
-('Window Cleaning', 'Professional cleaning of windows, including hard-to-reach areas'),
-('Carpet Cleaning', 'Deep cleaning of carpets using professional equipment and techniques'),
-('Move-In/Move-Out Cleaning', 'Comprehensive cleaning services when moving into or out of a property'),
-('Appliance Cleaning', 'Specialized cleaning for kitchen appliances, including ovens and refrigerators'),
-('Bathroom Sanitization', 'Deep cleaning and sanitization of bathrooms and toilet areas'),
-('Kitchen Cleaning', 'Detailed cleaning of kitchen spaces, including cabinets and pantries');
+-- Create temporary table with service types for population
+CREATE TEMPORARY TABLE service_types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100)
+);
 
--- Add 90 more service categories to reach 100
-INSERT INTO service_categories (name, description)
+-- Insert service types
+INSERT INTO service_types (name) VALUES
+('Residential Cleaning'),
+('Commercial Cleaning'),
+('Deep Cleaning'),
+('Post-Construction Cleaning'),
+('Window Cleaning'),
+('Carpet Cleaning'),
+('Move-In/Move-Out Cleaning'),
+('Appliance Cleaning'),
+('Bathroom Sanitization'),
+('Kitchen Cleaning');
+
+-- Add 90 more service types to reach 100
+INSERT INTO service_types (name)
 SELECT 
-    CONCAT('Specialty Service ', n),
-    CONCAT('Description for specialty service type ', n, ' covering various specialized cleaning needs')
+    CONCAT('Specialty Service ', n)
 FROM 
     (SELECT 1 + ones.n + 10 * tens.n AS n 
      FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
@@ -168,11 +173,11 @@ CREATE TEMPORARY TABLE cleaner_ids AS
 SELECT id FROM users WHERE role = 'cleaner';
 
 -- Create services for each cleaner
-INSERT INTO cleaner_services (user_id, category_id, name, type, price, description)
+INSERT INTO cleaner_services (user_id, name, type, price, description)
 SELECT 
     c.id,
-    (c.id % 100) + 1, -- Random category
     CONCAT('Service ', n, ' by Cleaner ', c.id),
+    (SELECT name FROM service_types WHERE id = (c.id % 100) + 1),
     CASE 
         WHEN n % 4 = 0 THEN 'Basic'
         WHEN n % 4 = 1 THEN 'Standard'
@@ -268,3 +273,4 @@ FROM
 
 -- Drop temporary tables
 DROP TEMPORARY TABLE IF EXISTS cleaner_ids;
+DROP TEMPORARY TABLE IF EXISTS service_types;

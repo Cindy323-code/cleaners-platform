@@ -11,7 +11,7 @@ class SearchShortlistController {
         $this->entity = User::getInstance(['role' => 'homeowner']);
     }
 
-    public function execute(int $homeownerId, string $keyword) : array {
-        return $this->entity->executeSearchShortlist($homeownerId, $keyword);
+    public function execute(int $userId, string $keyword, array $filters = []) : array {
+        return $this->entity->executeSearchShortlist($userId, $keyword, $filters);
     }
 }

@@ -17,10 +17,18 @@ if (!isset($_SESSION['user']) || $_SESSION['role'] !== 'homeowner') {
     exit;
 }
 
-// Handle search
+// Handle search and filters
 $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
-if (!empty($keyword)) {
-    $list = (new SearchShortlistController())->execute($_SESSION['user']['id'], $keyword);
+$filters = [
+    'price_min' => isset($_GET['price_min']) ? $_GET['price_min'] : '',
+    'price_max' => isset($_GET['price_max']) ? $_GET['price_max'] : '',
+    'type' => isset($_GET['type']) ? $_GET['type'] : '',
+    'sort_by' => isset($_GET['sort_by']) ? $_GET['sort_by'] : '',
+    'sort_dir' => isset($_GET['sort_dir']) ? $_GET['sort_dir'] : 'asc',
+];
+
+if (!empty($keyword) || !empty($filters['price_min']) || !empty($filters['price_max']) || !empty($filters['type']) || !empty($filters['sort_by'])) {
+    $list = (new SearchShortlistController())->execute($_SESSION['user']['id'], $keyword, $filters);
 } else {
     $list = (new ViewShortlistController())->execute($_SESSION['user']['id']);
 }
@@ -39,7 +47,7 @@ $success = isset($_GET['success']) ? (bool)$_GET['success'] : false;
 <?php endif; ?>
 
 <div class="card">
-    <div class="card-title">Search Shortlist</div>
+    <div class="card-title">Search & Filter Shortlist</div>
     <form method="get" class="search-form">
         <div class="form-group">
             <label for="keyword">Search by keyword:</label>
@@ -48,9 +56,68 @@ $success = isset($_GET['success']) ? (bool)$_GET['success'] : false;
                    value="<?= htmlspecialchars($keyword) ?>">
         </div>
         
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="type">Service Type:</label>
+                <select id="type" name="type">
+                    <option value="">All Types</option>
+                    <?php
+                    // Get all service types from shortlisted services
+                    $db = \Config\Database::getConnection();
+                    $userId = $_SESSION['user']['id'];
+                    $typesSql = "SELECT DISTINCT cs.type FROM shortlists s 
+                                JOIN cleaner_services cs ON s.service_id = cs.id 
+                                WHERE s.user_id = ? ORDER BY cs.type";
+                    $stmt = mysqli_prepare($db, $typesSql);
+                    mysqli_stmt_bind_param($stmt, 'i', $userId);
+                    mysqli_stmt_execute($stmt);
+                    $typesResult = mysqli_stmt_get_result($stmt);
+                    while ($type = mysqli_fetch_assoc($typesResult)) {
+                        $selected = (isset($_GET['type']) && $_GET['type'] === $type['type']) ? 'selected' : '';
+                        echo '<option value="' . htmlspecialchars($type['type']) . '" ' . $selected . '>' . htmlspecialchars($type['type']) . '</option>';
+                    }
+                    mysqli_stmt_close($stmt);
+                    ?>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="price_min">Min Price:</label>
+                <input type="number" id="price_min" name="price_min" min="0" step="0.01" 
+                       value="<?= htmlspecialchars($filters['price_min']) ?>">
+            </div>
+            
+            <div class="form-group">
+                <label for="price_max">Max Price:</label>
+                <input type="number" id="price_max" name="price_max" min="0" step="0.01"
+                       value="<?= htmlspecialchars($filters['price_max']) ?>">
+            </div>
+        </div>
+        
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="sort_by">Sort By:</label>
+                <select id="sort_by" name="sort_by">
+                    <option value="">Default</option>
+                    <option value="price" <?= ($filters['sort_by'] === 'price') ? 'selected' : '' ?>>Price</option>
+                    <option value="name" <?= ($filters['sort_by'] === 'name') ? 'selected' : '' ?>>Service Name</option>
+                    <option value="type" <?= ($filters['sort_by'] === 'type') ? 'selected' : '' ?>>Service Type</option>
+                    <option value="date" <?= ($filters['sort_by'] === 'date') ? 'selected' : '' ?>>Date Added</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="sort_dir">Sort Direction:</label>
+                <select id="sort_dir" name="sort_dir">
+                    <option value="asc" <?= ($filters['sort_dir'] === 'asc') ? 'selected' : '' ?>>Ascending</option>
+                    <option value="desc" <?= ($filters['sort_dir'] === 'desc') ? 'selected' : '' ?>>Descending</option>
+                </select>
+            </div>
+        </div>
+        
         <div class="form-actions">
-            <button type="submit" class="btn btn-small">Search</button>
-            <a href="view_shortlist.php" class="btn btn-small">Show All</a>
+            <button type="submit" class="btn btn-small">Apply Filters</button>
+            <a href="view_shortlist.php" class="btn btn-small">Reset</a>
             <a href="/Cleanplatform/boundary/homeowner/search_available_cleaners.php" class="btn btn-small">Find More Cleaners</a>
         </div>
     </form>
@@ -213,6 +280,23 @@ $success = isset($_GET['success']) ? (bool)$_GET['success'] : false;
     margin-top: 15px;
     display: flex;
     gap: 10px;
+}
+
+/* Add styles for filter rows */
+.filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.filter-row .form-group {
+    flex: 1;
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
 }
 </style>
 

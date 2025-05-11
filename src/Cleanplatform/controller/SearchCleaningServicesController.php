@@ -11,7 +11,7 @@ class SearchCleaningServicesController {
         $this->entity = User::getInstance(['role' => 'cleaner']);
     }
 
-    public function execute(int $cleanerId, string $keyword) : array {
-        return $this->entity->executeSearch($cleanerId, $keyword);
+    public function execute(int $cleanerId, string $keyword, array $filters = []) : array {
+        return $this->entity->executeSearch($cleanerId, $keyword, $filters);
     }
 }

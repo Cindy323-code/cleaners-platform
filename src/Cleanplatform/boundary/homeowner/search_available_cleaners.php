@@ -28,23 +28,121 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['keyword'])) {
 // Always execute to get results (empty criteria returns all)
 $controller = new SearchAvailableCleanersController();
 $results = $controller->execute($criteria);
+
+// 处理搜索请求
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $criteria = [];
+    
+    // Basic search
+    if (!empty($_GET['keyword'])) {
+        $criteria['keyword'] = $_GET['keyword'];
+    }
+    
+    if (!empty($_GET['service_type'])) {
+        $criteria['service_type'] = $_GET['service_type'];
+    }
+    
+    // Enhanced filters
+    if (!empty($_GET['price_min'])) {
+        $criteria['price_min'] = $_GET['price_min'];
+    }
+    
+    if (!empty($_GET['price_max'])) {
+        $criteria['price_max'] = $_GET['price_max'];
+    }
+    
+    if (!empty($_GET['availability'])) {
+        $criteria['availability'] = $_GET['availability'];
+    }
+    
+    // Sorting options
+    if (!empty($_GET['sort_by'])) {
+        $criteria['sort_by'] = $_GET['sort_by'];
+    }
+    
+    if (!empty($_GET['sort_dir'])) {
+        $criteria['sort_dir'] = $_GET['sort_dir'];
+    }
+    
+    $results = $controller->execute($criteria);
+}
 ?>
 
 <h2>Find Cleaners</h2>
 
-<div class="card">
-    <div class="card-title">Search Cleaners</div>
-    <form method="get" class="search-form">
-        <div class="form-group">
-            <label for="keyword">Search by keyword:</label>
-            <input type="text" id="keyword" name="keyword" 
-                   placeholder="Search by name, service, or description" 
-                   value="<?= htmlspecialchars($searchTerm) ?>">
+<!-- Search Form -->
+<div class="search-container">
+    <h3>Find Cleaners</h3>
+    <form method="get" action="search_available_cleaners.php">
+        <div class="search-row">
+            <input type="text" name="keyword" placeholder="Search by name, type or description..."
+                   value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '' ?>">
+            <button type="submit" class="btn-search">Search</button>
         </div>
         
-        <div class="form-actions">
-            <button type="submit" class="btn btn-small">Search</button>
-            <a href="search_available_cleaners.php" class="btn btn-small">Show All</a>
+        <div class="filter-container">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="service_type">Service Type:</label>
+                    <select id="service_type" name="service_type">
+                        <option value="">All Types</option>
+                        <?php
+                        // Get all service types
+                        $db = \Config\Database::getConnection();
+                        $typesSql = "SELECT DISTINCT type FROM cleaner_services ORDER BY type";
+                        $typesResult = mysqli_query($db, $typesSql);
+                        while ($type = mysqli_fetch_assoc($typesResult)) {
+                            $selected = (isset($_GET['service_type']) && $_GET['service_type'] === $type['type']) ? 'selected' : '';
+                            echo '<option value="' . htmlspecialchars($type['type']) . '" ' . $selected . '>' . htmlspecialchars($type['type']) . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="price_min">Min Price:</label>
+                    <input type="number" id="price_min" name="price_min" min="0" step="0.01" 
+                           value="<?= isset($_GET['price_min']) ? htmlspecialchars($_GET['price_min']) : '' ?>">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="price_max">Max Price:</label>
+                    <input type="number" id="price_max" name="price_max" min="0" step="0.01"
+                           value="<?= isset($_GET['price_max']) ? htmlspecialchars($_GET['price_max']) : '' ?>">
+                </div>
+            </div>
+            
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="availability">Availability:</label>
+                    <input type="text" id="availability" name="availability" 
+                           value="<?= isset($_GET['availability']) ? htmlspecialchars($_GET['availability']) : '' ?>" 
+                           placeholder="e.g. weekends, mornings">
+                </div>
+                
+                <div class="filter-group">
+                    <label for="sort_by">Sort By:</label>
+                    <select id="sort_by" name="sort_by">
+                        <option value="">Default (Price Low to High)</option>
+                        <option value="price" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'price') ? 'selected' : '' ?>>Price</option>
+                        <option value="name" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'name') ? 'selected' : '' ?>>Service Name</option>
+                        <option value="type" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] === 'type') ? 'selected' : '' ?>>Service Type</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="sort_dir">Sort Direction:</label>
+                    <select id="sort_dir" name="sort_dir">
+                        <option value="asc" <?= (isset($_GET['sort_dir']) && $_GET['sort_dir'] === 'asc') ? 'selected' : '' ?>>Ascending</option>
+                        <option value="desc" <?= (isset($_GET['sort_dir']) && $_GET['sort_dir'] === 'desc') ? 'selected' : '' ?>>Descending</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn-primary">Apply Filters</button>
+                <a href="search_available_cleaners.php" class="btn-secondary">Reset</a>
+            </div>
         </div>
     </form>
 </div>
@@ -191,6 +289,72 @@ $results = $controller->execute($criteria);
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+}
+
+.filter-container {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.filter-group {
+    flex: 1;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.filter-group select,
+.filter-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
 }
 </style>
 
