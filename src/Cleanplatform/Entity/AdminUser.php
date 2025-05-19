@@ -2,6 +2,7 @@
 // entity/AdminUser.php
 namespace Entity;
 require_once __DIR__ . '/User.php'; 
+require_once __DIR__ . '/UserProfile.php'; // Added UserProfile dependency
 
 class AdminUser extends User {
     // 使用基类中已定义的$tableName = 'users'
@@ -81,9 +82,24 @@ class AdminUser extends User {
             $data['role'],
             $data['status']
         );
-        $ok = mysqli_stmt_execute($stmt);
+        $userCreated = mysqli_stmt_execute($stmt);
+        $newUserId = mysqli_insert_id($this->conn); // Get new user ID
         mysqli_stmt_close($stmt);
-        return $ok;
+
+        if ($userCreated && $newUserId) {
+            $userProfile = new UserProfile();
+            // Create a default profile, using username as full_name initially
+            // For Admin, perhaps profile is less critical or handled differently, but we add a basic one for consistency
+            $profileData = [
+                'full_name'    => $data['username'],
+                'avatar_url'   => '',
+                'bio'          => '', 
+                'availability' => '' 
+            ];
+            $profileCreated = $userProfile->createProfile($newUserId, $profileData);
+            return $profileCreated;
+        }
+        return false;
     }
 
     /** 查看用户详情 */
