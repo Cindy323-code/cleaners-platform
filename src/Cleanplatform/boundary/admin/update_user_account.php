@@ -31,17 +31,25 @@ $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $fields = [];
-    if ($_POST['email'])    $fields['email'] = trim($_POST['email']);
-    if ($_POST['role'])     $fields['role'] = trim($_POST['role']);
-    if ($_POST['status'])   $fields['status'] = trim($_POST['status']);
+    if (isset($_POST['email']) && $_POST['email'])    $fields['email'] = trim($_POST['email']);
+    if (isset($_POST['role']) && $_POST['role'])     $fields['role'] = trim($_POST['role']);
+    if (isset($_POST['status']) && $_POST['status'])   $fields['status'] = trim($_POST['status']);
+
+    // Profile fields
+    $profileData = [];
+    if (isset($_POST['full_name'])) $profileData['full_name'] = trim($_POST['full_name']);
+    if (isset($_POST['avatar_url'])) $profileData['avatar_url'] = trim($_POST['avatar_url']);
+    if (isset($_POST['bio'])) $profileData['bio'] = trim($_POST['bio']);
+    if (isset($_POST['availability'])) $profileData['availability'] = trim($_POST['availability']);
 
     $controller = new UpdateUserAccountController();
-    $ok = $controller->execute($username, $fields);
+    $ok = $controller->execute($username, $fields, $profileData);
     $message = $ok ? 'Update successful' : 'Update failed';
     
-    // Refresh the user list after successful update
+    // Refresh the user data after successful update to show new profile info
     if ($ok) {
-        $allUsers = $viewController->getAllUsers();
+        $allUsers = $viewController->getAllUsers(); // This might need to be re-fetched or ensure it has profile data
+        $preUserData = $viewController->execute($username); // Re-fetch current user's data
     }
 }
 ?>
@@ -60,12 +68,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <form method="post">
     <div class="form-group">
       <label for="username">Username:</label>
-      <input type="text" id="username" name="username" value="<?=htmlspecialchars($preUserData['user'] ?? $preUsername)?>" required>
+      <input type="text" id="username" name="username" value="<?=htmlspecialchars($preUserData['user'] ?? $preUsername)?>" required readonly>
+      <!-- Making username readonly as it's the key -->
     </div>
     
     <div class="form-group">
       <label for="email">Email:</label>
       <input type="email" id="email" name="email" value="<?=htmlspecialchars($preUserData['email'] ?? '')?>">
+    </div>
+
+    <div class="form-group">
+      <label for="full_name">Full Name:</label>
+      <input type="text" id="full_name" name="full_name" value="<?=htmlspecialchars($preUserData['full_name'] ?? '')?>">
+    </div>
+
+    <div class="form-group">
+      <label for="avatar_url">Avatar URL:</label>
+      <input type="text" id="avatar_url" name="avatar_url" value="<?=htmlspecialchars($preUserData['avatar_url'] ?? '')?>">
+    </div>
+
+    <div class="form-group">
+      <label for="bio">Bio:</label>
+      <textarea id="bio" name="bio" rows="3"><?=htmlspecialchars($preUserData['bio'] ?? '')?></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="availability">Availability:</label>
+      <input type="text" id="availability" name="availability" value="<?=htmlspecialchars($preUserData['availability'] ?? '')?>">
     </div>
     
     <div class="form-group">

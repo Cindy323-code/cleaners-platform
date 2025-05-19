@@ -2,6 +2,7 @@
 // entity/CleanerUser.php
 namespace Entity;
 require_once __DIR__ . '/User.php';
+require_once __DIR__ . '/UserProfile.php';
 
 class CleanerUser extends User {
     // 使用基类中已定义的$tableName = 'users'
@@ -19,9 +20,22 @@ class CleanerUser extends User {
             $data['role'],
             $data['status']
         );
-        $ok = mysqli_stmt_execute($stmt);
+        $userCreated = mysqli_stmt_execute($stmt);
+        $newUserId = mysqli_insert_id($this->conn);
         mysqli_stmt_close($stmt);
-        return $ok;
+
+        if ($userCreated && $newUserId) {
+            $userProfile = new UserProfile();
+            $profileData = [
+                'full_name'    => $data['username'],
+                'avatar_url'   => '',
+                'bio'          => '',
+                'availability' => ''
+            ];
+            $profileCreated = $userProfile->createProfile($newUserId, $profileData);
+            return $profileCreated;
+        }
+        return false;
     }
 
     /** 用户登录 - 从users表查询cleaner角色 */
